@@ -36,30 +36,28 @@
         pc[15];          // address of next instruction
 
     PARTS:
-    
-    // Decode the instruction
     Decode(in=instruction, type=type, a=a, c1=c1, c2=c2, c3=c3, c4=c4, c5=c5, c6=c6, d1=d1, d2=d2, d3=d3, j1=j1, j2=j2, j3=j3);
-    
-    // Determine ALU input
-    Mux16(a=A, b=inM, sel=a, out=aluY);
-    
-    // Execute ALU operation
-    ALU(x=D, y=aluY, zx=c1, nx=c2, zy=c3, ny=c4, f=c5, no=c6, out=outALU, zr=zr, ng=ng);
 
-    // Jump logic
+    ALU(x=alux, y=aluy, zx=c1, nx=c2, zy=c3, ny=c4, f=c5, no=c6, out=aluout, zr=zr, ng=ng);
+    And16 (a=true, b=aluout, out=outM);
+
+    Not (in=type, out=ni);
+    Or (a=ni, b=d1, out=load1);
+
+    Mux16 (a=instruction, b=aluout, sel=type, out=ain);
+    ARegister (in=ain, load=load1, out=aout);
+
+    And16 (a=true, b=aout, out[0..14]=addressM);
+
+    Mux16 (a=aout, b=inM, sel=a, out=aluy);
+
+    DRegister (in=aluout, load=d2, out=alux);
+
+    And (a=true, b=d3, out=writeM);
+
     Jump(j1=j1, j2=j2, j3=j3, zr=zr, ng=ng, jump=doJump);
 
-    // Load values into A-register and D-register
-    ARegister(in=outALU, load=d1, out=A, out[0..14]=addressM);
-    DRegister(in=outALU, load=d2, out=D);
-
-    // Determine if we should write to M
-    And(a=type, b=d3, out=writeM);
-    
     // Determine the next instruction address
     Or(a=reset, b=doJump, out=loadPCfromA);
-    PC(in=A, load=loadPCfromA, inc=true, reset=reset, out[0..14]=pc);
-
-    // Determine the output M value
-    Mux16(a=A, b=outALU, sel=d3, out=outM);
+    PC(in=aout, load=loadPCfromA, inc=true, reset=reset, out[0..14]=pc);
 }
