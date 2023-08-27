@@ -25,19 +25,41 @@
  * than to the address resulting from executing the current instruction. 
  */
 
-CHIP CPU {
-
-    IN  inM[16],         // M value input  (M = contents of RAM[A])
+ CHIP CPU {
+    IN  inM[16],      // M value input  (M = contents of RAM[A])
         instruction[16], // Instruction for execution
-        reset;           // Signals whether to re-start the current
-                         // program (reset==1) or continue executing
-                         // the current program (reset==0).
+        reset;           // Signals to restart or continue
 
     OUT outM[16],        // M value output
-        writeM,          // Write to M? 
+        writeM,          // Write into M?
         addressM[15],    // Address in data memory (of M)
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    
+    // Decode the instruction
+    Decode(in=instruction, type=type, a=a, c1=c1, c2=c2, c3=c3, c4=c4, c5=c5, c6=c6, d1=d1, d2=d2, d3=d3, j1=j1, j2=j2, j3=j3);
+    
+    // Determine ALU input
+    Mux16(a=A, b=inM, sel=a, out=aluY);
+    
+    // Execute ALU operation
+    ALU(x=D, y=aluY, zx=c1, nx=c2, zy=c3, ny=c4, f=c5, no=c6, out=outALU, zr=zr, ng=ng);
+
+    // Jump logic
+    Jump(j1=j1, j2=j2, j3=j3, zr=zr, ng=ng, jump=doJump);
+
+    // Load values into A-register and D-register
+    ARegister(in=outALU, load=d1, out=A, out[0..14]=addressM);
+    DRegister(in=outALU, load=d2, out=D);
+
+    // Determine if we should write to M
+    And(a=type, b=d3, out=writeM);
+    
+    // Determine the next instruction address
+    Or(a=reset, b=doJump, out=loadPCfromA);
+    PC(in=A, load=loadPCfromA, inc=true, reset=reset, out[0..14]=pc);
+
+    // Determine the output M value
+    Mux16(a=A, b=outALU, sel=d3, out=outM);
 }

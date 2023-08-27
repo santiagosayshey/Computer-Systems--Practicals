@@ -14,39 +14,24 @@
  * For c-instructions, outputs should correspond to their bits in the c-instruction
  */
 
-CHIP Decode {
+ CHIP Decode {
+    IN  in[16];             
+    OUT type, a, c1, c2, c3, c4, c5, c6, d1, d2, d3, j1, j2, j3;
 
-    IN  in[16];             // instruction to decode
-
-    OUT type,               // Instruction type
-        a,                  // ALU A/M
-        c1,c2,c3,c4,c5,c6,  // Op-code wires to ALU
-        d1,d2,d3,           // Destination wires
-        j1,j2,j3;           // Jump wires
-
-        PARTS:
-        And (a=true, b=in[15], out=type);
+    PARTS:
     
-        Not (in=in[15], out=ni);
-    
-        // a
-        And (a=in[15], b=in[12], out=a);
-    
-        // c
-        And (a=in[15], b=in[11], out=c1); // c1
-        And (a=in[15], b=in[10], out=c2); // c2
-        And (a=in[15], b=in[9], out=c3);  // c3
-        And (a=in[15], b=in[8], out=c4);  // c4
-        And (a=in[15], b=in[7], out=c5);   // c5
-        And (a=in[15], b=in[6], out=c6);  // c6
-    
-        // d
-        And (a=in[15], b=in[5], out=d1); // d1
-        And (a=in[15], b=in[4], out=d2); // d2
-        And (a=in[15], b=in[3], out=d3); // d3
-    
-        // j
-        And (a=in[15], b=in[2], out=j1); // j1
-        And (a=in[15], b=in[1], out=j2); // j2
-        And (a=in[15], b=in[0], out=j3); // j3
+    And(a=in[15], b=true, out=type, out=isel);
+    Mux(a=false, b=in[12], sel=isel, out=a);
+    Mux(a=false, b=in[11], sel=isel, out=c1);
+    Mux(a=false, b=in[10], sel=isel, out=c2);
+    Mux(a=false, b=in[9], sel=isel, out=c3);
+    Mux(a=false, b=in[8], sel=isel, out=c4);
+    Mux(a=false, b=in[7], sel=isel, out=c5);
+    Mux(a=false, b=in[6], sel=isel, out=c6);
+    Mux(a=true, b=in[5], sel=isel, out=d1);
+    Mux(a=false, b=in[4], sel=isel, out=d2);
+    Mux(a=false, b=in[3], sel=isel, out=d3);
+    Mux(a=false, b=in[2], sel=isel, out=j1);
+    Mux(a=false, b=in[1], sel=isel, out=j2);
+    Mux(a=false, b=in[0], sel=isel, out=j3);
 }
