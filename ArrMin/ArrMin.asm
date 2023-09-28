@@ -3,59 +3,41 @@
 A=M
 D=M
 @R0
-M=D
+M=D // R0 now holds the first element of the array
 
-// Initialize R3 as the counter
+// Check if the array length is 0 or less, if so, end the program
 @R2
 D=M
-@R3
-M=D
-
-// Check if the array length is <= 0, if so, skip the loop
-@R3
-D=M
 @END
-D;JLE  // Jump if the length is less than or equal to 0
+D;JLE // If array length (R2) is less than or equal to 0, Jump to END
 
 // Loop begins
 (LOOP)
-
-// Decrement our loop counter (R3) first
-@R3
-M=M-1
-D=M
-@END
-D;JLE // If R3 is less than or equal to 0, end the loop
-
-// Compare R0 with the current array element
 @R1
-A=M
-D=M
+M=M+1 // Move R1 to the next array element
+A=M   // Load the address of the next array element
+D=M   // Load the next array element to D
 
 @R0
-D=D-M
+D=M-D // Subtract the value in R0 from the current array element
 @CONTINUE
-D;JGE  // If current array element is greater than or equal to R0, don't update R0
+D;JGE // If the current array element is greater than or equal to R0, go to CONTINUE
 
-// Update R0 with the smaller value found in the array
+// If we are here, it means we found a smaller element. Update R0
 @R1
 A=M
 D=M
 @R0
-M=D
+M=D // Update R0 with the new smallest value
 
-// Labels for clarity
+// Continue with the next iteration
 (CONTINUE)
-
-// Move to the next array element
-@R1
-M=M+1
-
-// Jump to the beginning of the loop
+@R2
+M=M-1 // Decrement the counter (array length)
+D=M  // Load the updated counter
 @LOOP
-0;JMP
+D;JGT // If the counter (array length) is greater than 0, go back to LOOP
 
 // End of program
 (END)
-@END
 0;JMP
