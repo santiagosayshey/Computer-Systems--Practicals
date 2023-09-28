@@ -14,7 +14,7 @@ D=M
 @R3
 M=D  // R3 = R2 (length of the array)
 
-// Check if the array length is 0, if so, skip the loop
+// Check if the array length is 0, if so, skip the loopa
 @R3
 D=M
 @END
@@ -29,10 +29,10 @@ A=M
 D=M   // D = *R1 (current array element)
 
 @R0
-D=D-M // D = current array element - R0 (smallest element found so far)
+D=M-D // D = R0 - current array element
 
 @CONTINUE
-D;JGE  // If D >= 0, jump to CONTINUE (this means current array element is greater or equal to the smallest found)
+D;JGE  // If D >= 0 (R0 >= current array element), jump to CONTINUE
 
 // If we are here, the current array element is smaller than R0
 @R1
