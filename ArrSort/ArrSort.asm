@@ -4,108 +4,96 @@
 // Put your code here.
 
 // Initialize counters and temporary variables
-@i         // Outer loop counter
-M=0
-@j         // Inner loop counter
-M=0
-@R2        // Assume R2 holds the length of the array
+@0         
+D=0
+@i         // Outer loop counter i = 0
+M=D
+@j         // Inner loop counter j = 0
+M=D
+@R2        
 D=M
-@outer    // Set outer loop boundary
+@outer     // Set outer loop boundary to (length - 1)
 M=D-1
-@inner     // Set inner loop boundary
+@inner     // Set inner loop boundary to (length - 1)
 M=D-1
 
-// Set a flag value in R5
-@R5
-M=0
-M=M-1  // Setting R5 to -1
+@R5        // Set a flag value in R5 to -1 (True)
+M=-1  
 
-// Start of the outer loop
 (OUTERLOOP)
 @i
-D=M      // Load outer loop counter
+D=M
 @inner
-M=M-D    // Update inner boundary per outer counter
+M=M-D    // Update inner loop boundary
 @j
-M=0      // Reset inner counter
+M=0      // Reset inner loop counter j
 
-// Start of the inner loop
 (INNERLOOP)
+@R1       
+D=M
 @j
-D=M      // Load inner loop counter
-@R1      // Assume R1 holds the base address of the array
-A=M+D    // Compute the address of arr[j]
+A=D+M    // Address of arr[j]
 D=A
-@R11     // Store address of arr[j] to R11
-M=D
+@R11
+M=D      // Store address of arr[j] to R11
 
-@j
-D=M+1    // Load inner loop counter and add 1
 @R1
-A=M+D    // Compute the address of arr[j+1]
+D=M
+@j
+A=D+M+1  // Address of arr[j + 1]
 D=A
-@R12     // Store address of arr[j+1] to R12
-M=D
+@R12
+M=D      // Store address of arr[j+1] to R12
 
-// Compare arr[j] and arr[j+1]
 @R11
 A=M
 D=M
 @R12
 A=M
-D=D-M    // Compute arr[j] - arr[j+1]
+D=D-M
 @SWAP
-D;JGT    // If arr[j] > arr[j+1], jump to SWAP
+D;JGT    // If arr[j] > arr[j+1], go to SWAP
 
 (RETURN)
 @j
-M=M+1    // Increment inner loop counter
+M=M+1
 D=M
 @inner
-D=D-M    // Check if we have reached the inner loop boundary
+D=D-M
 @INNERLOOP
-D;JLT    // If not, continue with the inner loop
+D;JLT
 
-// Check for outer loop boundary
 @i
-M=M+1    // Increment outer loop counter
+M=M+1
 D=M
 @outer
-D=D-M    // Check if we have reached the outer loop boundary
+D=D-M
 @OUTERLOOP
-D;JLT    // If not, continue with the outer loop
+D;JLT
 
+@R5
+D=M
+@R0
+M=D
 @END
-0;JMP    // If both loops are complete, jump to END
+0;JMP    // Halt
 
-// Swap arr[j] and arr[j+1] if needed
 (SWAP)
 @R11
 A=M
-D=M      // Load arr[j]
-@R13     // Store arr[j] to R13
-M=D
-
+D=M
+@R13
+M=D      // Store arr[j] to R13
 @R12
 A=M
-D=M      // Load arr[j+1]
+D=M
 @R11
 A=M
 M=D      // Update arr[j] to arr[j+1]
-
 @R13
-D=M      // Load arr[j] from R13
+D=M
 @R12
 A=M
 M=D      // Update arr[j+1] to arr[j]
 @RETURN
-0;JMP    // Return to the previous point in the inner loop
-
-// End the program and signal completion
-(END)
-@R5
-D=M      // Load the flag value from R5
-@R0
-M=D      // Update R0 to signal completion
-@END
-0;JMP    // End the program
+0;JMP
