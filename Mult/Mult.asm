@@ -10,71 +10,96 @@
 // Multiplies R1 and R2 and stores the result in R0.
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
-// Initialize
+// Initialization
 @R0
-M=0  // clear R0
-@R4
-M=0  // this will store the absolute value of R1
-@R5
-M=0  // this will store the absolute value of R2
-@R6
-M=0  // flag, 1 if result should be negative, 0 otherwise
+M=0
 
-// Check sign of R1 and store absolute value in R4
 @R1
 D=M
-@POS1
-D;JGE  // if R1 >= 0, jump to POS1
-@R6
-M=!M  // toggle flag if R1 is negative
 @R4
-M=-D  // store absolute value of R1 in R4
-@R1_POSITIVE
-0;JMP  // jump to R1_POSITIVE
+M=D // R4 will hold the shifting R1
 
-(POS1)
-@R4
-M=D  // store absolute value of R1 in R4
-
-(R1_POSITIVE)
-
-// Check sign of R2 and store absolute value in R5
 @R2
 D=M
-@POS2
-D;JGE  // if R2 >= 0, jump to POS2
-@R6
-M=!M  // toggle flag if R2 is negative
-@R5
-M=-D  // store absolute value of R2 in R5
-@MULTIPLY
-0;JMP  // jump to MULTIPLY
+@R3
+M=D // R3 will be used to iterate over the bits of R2
 
-(POS2)
+// Handling the sign of the result and making R1 and R2 positive for the multiplication loop
 @R5
-M=D  // store absolute value of R2 in R5
+M=0 // Initialize the sign flag to positive
 
-// Multiplication Loop
-(MULTIPLY)
+@R1
+D=M
+@POSITIVE1
+D;JGE
+
+@R1
+M=-D // If R1 is negative, make it positive and update the sign flag
 @R5
+M=!M
+(POSITIVE1)
+
+@R2
+D=M
+@POSITIVE2
+D;JGE
+
+@R2
+M=-D // If R2 is negative, make it positive and update the sign flag
+@R5
+M=!M
+(POSITIVE2)
+
+// Loop for each bit in R2
+(LOOP)
+@R3
 D=M
 @END
-D;JEQ  // if R2 is 0, jump to END
+D;JEQ // If R3 is zero, end the loop
+
+@R3
+D=M
+D=D-1
+@R3
+M=D // Decrement R3
+
 @R4
 D=M
+@TEMP
+M=D // Store the current value of R4 in TEMP
+
+@R2
+D=M
+@NEXT
+D;JLE // If R2 is less than or equal to 0, go to the next iteration
+
+// If the LSB of R2 is 1, add the value of R4 to R0
 @R0
-M=M+D  // add R1 to R0
-@R5
-M=M-1  // decrement R2
-@MULTIPLY
-0;JMP  // jump to MULTIPLY
+M=M+D
+@TEMP
+D=M
+@R0
+M=M+D
+
+(NEXT)
+@R4
+M=M+M // Shift R4 left by 1
+
+@R2
+M=M>>1 // Shift R2 right by 1 (divide by 2)
+
+@LOOP
+0;JMP // Jump back to the loop
 
 (END)
-@R6
-D=M
-@FINISH
-D;JEQ  // if result is positive, jump to FINISH
-@R0
-M=-M  // negate R0
 
-(FINISH)
+// Adjusting the sign of the result
+@R5
+D=M
+@NO_NEGATE
+D;JEQ
+
+@R0
+M=-M // If the sign flag is set, negate R0
+
+(NO_NEGATE)
