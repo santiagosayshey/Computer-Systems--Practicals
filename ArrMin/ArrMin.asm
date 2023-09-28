@@ -1,62 +1,38 @@
-// Finds the smallest element in the array of length R2 whose first element is at RAM[R1] and stores the result in R0.
-// (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
-
-// Put your code here.
-// Initialization: Set R0 to the first element in the array
-@R1
-A=M
-D=M
+// Initialization: Set R0 to 32767 (maximum possible value)
+@32767
+D=A
 @R0
 M=D
 
-// Set R3 as the counter (equivalent to a 'for loop' iterator in high-level languages)
+// Check if the array length is 0 or less; if so, end the program
 @R2
 D=M
-@R3
-M=D
-
-// Check if the array length is 0, if so, skip the loop
-@R3
-D=M
 @END
-D;JEQ
+D;JLE
 
-// Loop begins
 (LOOP)
-
-// Compare R0 with the current array element
 @R1
-A=M
-D=M
+A=M+1 // Point to the next element in array
+D=M   // Get the next element value
 
 @R0
-D=D-M
-@CONTINUE
-D;JGE  // If current array element is greater than or equal to R0, don't update R0
+D=M-D // Compare with the minimum found till now
 
-// Update R0 with the smaller value found in the array
+@CONTINUE
+D;JGE // If the current element is greater or equal, continue to the next element
+
 @R1
 A=M
-D=M
+D=M   // Else, update R0 with the new minimum value
 @R0
 M=D
 
-// Labels for clarity
 (CONTINUE)
-
-// Move to the next array element
-@R1
-M=M+1
-
-// Decrement our loop counter (R3)
-@R3
+@R2
 M=M-1
-@R3
-D=M
+D=M   // Decrement the array length (counter)
 @LOOP
-D;JGT  // If R3 is greater than 0, continue the loop
+D;JGT // If more elements are there, continue the loop
 
-// End of program
 (END)
-@END
-0;JMP
+0;JMP // End the program
