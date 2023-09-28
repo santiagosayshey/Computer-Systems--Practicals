@@ -12,94 +12,81 @@
 
 // Initialization
 @R0
-M=0
+M=0 // Clear R0 to store the result.
 
 @R1
 D=M
 @R4
-M=D // R4 will hold the shifting R1
+M=D // Store value of R1 in R4.
 
 @R2
 D=M
 @R3
-M=D // R3 will be used to iterate over the bits of R2
+M=D // Store value of R2 in R3.
 
-// Handling the sign of the result and making R1 and R2 positive for the multiplication loop
 @R5
-M=0 // Initialize the sign flag to positive
+M=0 // Set R5 as the sign flag, 0 is positive.
 
-@R1
+// Check if either R1 or R2 is zero.
+@R4
 D=M
-@POSITIVE1
-D;JGE
+@END
+D;JEQ // If R1 is zero, jump to END.
 
-@R1
-M=-D // If R1 is negative, make it positive and update the sign flag
-@R5
-M=!M
-(POSITIVE1)
-
-@R2
-D=M
-@POSITIVE2
-D;JGE
-
-@R2
-M=-D // If R2 is negative, make it positive and update the sign flag
-@R5
-M=!M
-(POSITIVE2)
-
-// Loop for each bit in R2
-(LOOP)
 @R3
 D=M
 @END
-D;JEQ // If R3 is zero, end the loop
+D;JEQ // If R2 is zero, jump to END.
 
+// Check if R1 is negative.
+@R4
+D=M
+@CHECK_R2
+D;JGE // If R1 is positive, jump to CHECK_R2.
+
+@R4
+M=-D // Make R1 positive.
+@R5
+M=!M // Flip the sign flag.
+
+// Check if R2 is negative.
+(CHECK_R2)
 @R3
 D=M
-D=D-1
+@MULTIPLY
+D;JGE // If R2 is positive, jump to MULTIPLY.
+
 @R3
-M=D // Decrement R3
+M=-D // Make R2 positive.
+@R5
+M=!M // Flip the sign flag.
+
+// Start of the multiplication loop.
+(MULTIPLY)
+@R3
+D=M
+@END
+D;JEQ // If R2 is zero, jump to END.
 
 @R4
 D=M
-@TEMP
-M=D // Store the current value of R4 in TEMP
-
-@R2
-D=M
-@NEXT
-D;JLE // If R2 is less than or equal to 0, go to the next iteration
-
-// If the LSB of R2 is 1, add the value of R4 to R0
 @R0
-M=M+D
-@TEMP
+M=D+M // Add R1 to R0.
+
+@R3
+MD=M-1 // Decrement R2.
+
+@MULTIPLY
+D;JGT // If R2 is greater than zero, jump to MULTIPLY.
+
+// Adjust the sign of the result if needed.
+@R5
 D=M
+@END
+D;JEQ // If the sign flag is zero, jump to END.
+
 @R0
-M=M+D
-
-(NEXT)
-@R4
-M=M+M // Shift R4 left by 1
-
-@R2
-M=M>>1 // Shift R2 right by 1 (divide by 2)
-
-@LOOP
-0;JMP // Jump back to the loop
+M=-M // Negate the result in R0.
 
 (END)
 
-// Adjusting the sign of the result
-@R5
-D=M
-@NO_NEGATE
-D;JEQ
-
-@R0
-M=-M // If the sign flag is set, negate R0
-
-(NO_NEGATE)
