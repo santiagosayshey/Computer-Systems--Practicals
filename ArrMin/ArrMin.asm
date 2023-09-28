@@ -2,61 +2,66 @@
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
 // Put your code here.
-// Initialization: Set R0 to the first element in the array
-@R1
-A=M
-D=M
-@R0
-M=D
 
-// Set R3 as the counter (equivalent to a 'for loop' iterator in high-level languages)
+// Initialize
+@i      // Counter i
+M=0
+
+@R1     // Assume R1 holds the base address of the array
+D=M
+@i      // Compute address of the first element, i.e., base + 0
+AM=D+M  // Update i and set A register
+D=M     // Load the value of the first element of the array
+@R0     // Assume R0 will hold the minimum value found
+M=D
+@R3     // R3 will also hold the minimum value found for comparison
+M=D
+@R2     // Assume R2 holds the length of the array
+M=M-1   // Decrement length as we already processed one element
+
+// Start Loop
+@LOOP
+0;JMP
+
+// Find Minimum
+(MINIMUM)
+@i
+AM=M    // Increment address to the next element and set A register
+D=M     // Load the value of the next element
+@R0     // Update R0 to hold the new minimum if found
+M=D
+D=M     // Load minimum value to D for comparison
+@R3
+M=D     // Update R3 to hold the minimum for comparison
 @R2
-D=M
-@R3
-M=D
-
-// Check if the array length is 0, if so, skip the loop
-@R3
+M=M-1   // Decrement the length counter as another element is processed
 D=M
 @END
-D;JEQ
+D;JEQ   // If the length counter reaches 0, jump to END
 
-// Loop begins
+// Continue Loop
 (LOOP)
-
-// Compare R0 with the current array element
-@R1
-A=M
-D=M
-
 @R0
-D=D-M
-@CONTINUE
-D;JGE  // If current array element is greater than or equal to R0, don't update R0
-
-// Update R0 with the smaller value found in the array
-@R1
-A=M
-D=M
-@R0
-M=D
-
-// Labels for clarity
-(CONTINUE)
-
-// Move to the next array element
-@R1
-M=M+1
-
-// Decrement our loop counter (R3)
+D=M     // Load current minimum to D
 @R3
-M=M-1
+M=D     // Update R3 for comparison
+@i
+AM=M+1  // Increment address to the next element and set A register
+D=M     // Load the value of the next element
 @R3
+D=M-D   // Compare the value with current minimum
+M=D     // Store the result of comparison in R3
+@MINIMUM
+D;JGT   // If the next element is greater, jump to MINIMUM to update minimum
+@R2
+M=M-1   // Decrement the length counter as another element is processed
 D=M
+@END
+D;JEQ   // If the length counter reaches 0, jump to END
 @LOOP
-D;JGT  // If R3 is greater than 0, continue the loop
+0;JMP   // Continue with the next element
 
-// End of program
+// End the program
 (END)
 @END
-0;JMP
+0;JMP   // Halt
