@@ -1,38 +1,45 @@
-// Initialization: Set R0 to 32767 (maximum possible value)
-@32767
-D=A
+@R1
+A=M
+D=M
 @R0
 M=D
 
-// Check if the array length is 0 or less; if so, end the program
 @R2
 D=M
+@R3
+M=D  // Initialize R3 as the counter
+
+@R3
+D=M
 @END
-D;JLE
+D;JEQ  // If array length is 0, end the program
 
 (LOOP)
 @R1
-A=M+1 // Point to the next element in array
-D=M   // Get the next element value
+A=M
+D=M   // Load the current element
 
 @R0
-D=M-D // Compare with the minimum found till now
+D=M-D // Subtract from the current minimum value
 
-@CONTINUE
-D;JGE // If the current element is greater or equal, continue to the next element
+@NOT_UPDATE
+D;JGE // If the result is >=0, do not update R0
 
 @R1
 A=M
-D=M   // Else, update R0 with the new minimum value
+D=M   // Update R0 with the new smaller value
 @R0
 M=D
 
-(CONTINUE)
-@R2
+(NOT_UPDATE)
+@R1
+M=M+1 // Move to the next element in the array
+
+@R3
 M=M-1
-D=M   // Decrement the array length (counter)
+D=M   // Decrement counter
 @LOOP
-D;JGT // If more elements are there, continue the loop
+D;JGT // If more elements are there, repeat the loop
 
 (END)
-0;JMP // End the program
+0;JMP  // End of the program
