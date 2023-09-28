@@ -2,73 +2,106 @@
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
 // Put your code here.
-// Bubble sort implementation for Hack assembly
-
-@R1
-D=M     // Start address of the array
-@START
-M=D     // START stores the start address of the array
-
+//resetting the counters for the inner and outter loop
+@i
+M=0
+@j
+M=0
 @R2
-D=M-1   // D = Length of the array - 1 (since we count from 0)
-@SIZE
-M=D     // SIZE stores the length of the array - 1
+D=M
+@outter
+M=D-1
+@inner
+M=D-1
+@R5
+M=0
+M=M-1
 
-(LOOP)
-@SIZE
-D=M     // Load SIZE into D
-@ENDLOOP
-D;JLE   // Jump to ENDLOOP if D <= 0
 
-@START
-A=M     // Point to the start of the array
-D=M     // Load first element into D
+(OUTERLOOP)
+@i
+D=M
+@inner
+M=M-D
+@j
+M=0
 
-@I
-M=0     // Reset I to 0
+(INNERLOOOP)
+// storing address of arr[j]
+@j
+D=M
+@R1
+A=M+D
+D=A
+@R11
+M=D
+ 
+// Storing Address of arr[j+1]
+@j
+D=M+1
+@R1
+A=M+D
+D=A
+@R12
+M=D
 
-(SWAPLOOP)
-@I
-D=M     // Load I into D
-@SIZE
-D=D-M   // Subtract SIZE from I
-@ENDSWAPLOOP
-D;JLE   // Jump to ENDSWAPLOOP if D <= 0
+@R11
+A=M
+D=M
+@R12
+A=M
+D=D-M
+@SWAP
+D;JGT
 
-@START
-A=M+A   // Point to the current element
-D=M     // Load current element into D
+(RETURNPOINT)
+// Checking if still in the innerLoop
+@j
+M=M+1
+D=M
+@inner
+D=D-M
+@INNERLOOOP
+D; JLT
 
-@START
-A=M+A+1   // Point to the next element
-D=D-M     // Subtract next element from current
-@NOSWAP
-D;JGE     // Jump to NOSWAP if no swap is needed
+//Checkfor outside loop
+@i
+M=M+1
+D=M
+@outter
+D=D-M
+@OUTERLOOP
+D;JLT
 
-// Swap the two numbers
-@START
-A=M+A
-M=M+D     // Add the difference to the current number (making it the larger number)
-
-@START
-A=M+A+1
-M=M-D     // Subtract the difference from the next number (making it the smaller number)
-
-(NOSWAP)
-@I
-M=M+1   // Increment I
-@SWAPLOOP
-0;JMP
-
-(ENDSWAPLOOP)
-@SIZE
-M=M-1   // Decrement SIZE
-@LOOP
-0;JMP
-
-(ENDLOOP)
-@R0
-M=-1   // Set R0 to True (-1) to indicate completion
-(END)
 @END
+0; JMP
+
+(SWAP)
+@R11
+A=M
+D=M
+@R13
+M=D
+
+@R12
+A=M
+D=M
+@R11
+A=M
+M=D
+
+@R13
+D=M
+@R12
+A=M
+M=D
+@RETURNPOINT
 0;JMP
+
+(END)
+@R5
+D=M
+@R0
+M=D
+@END
+0; JMP
