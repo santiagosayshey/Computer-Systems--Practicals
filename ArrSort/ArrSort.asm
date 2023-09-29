@@ -4,24 +4,23 @@
 // Put your code here.
 
 // Initialize counters and temporary variables
-@i         // Outer loop counter
+@i
 M=0
-@j         // Inner loop counter
+@j
 M=0
-@R2        // Assume R2 holds the length of the array
+@R2
 D=M
-@outer     // Set outer loop boundary
+@outer
 M=D
-@inner     // Set inner loop boundary
-M=D-1      // Decrement by 1 as we will compare adjacent elements
+@inner
+M=D-1
 
-// Set a flag value in R5 to track if any swaps are made
 @R5
-M=0    // Initialize as 0 (no swaps)
+M=0    // Initialize the swap flag to 0
 
 (OUTERLOOP)
 @R5
-M=0    // Reset swap flag at the start of each outer loop iteration
+M=0
 @i
 D=M
 @inner
@@ -33,19 +32,18 @@ M=0    // Reset inner counter j
 @j
 D=M
 @R1
-A=M+D    // Compute the address of arr[j]
+A=M+D
 D=A
 @R11
-M=D    // Store address of arr[j] to R11
+M=D
 @j
 D=M+1
 @R1
-A=M+D    // Compute the address of arr[j+1]
+A=M+D
 D=A
 @R12
-M=D    // Store address of arr[j+1] to R12
+M=D
 
-// Compare and possibly swap arr[j] and arr[j+1]
 @R11
 A=M
 D=M
@@ -53,7 +51,7 @@ D=M
 A=M
 D=D-M
 @SWAP
-D;JGT
+D;JGT    // If arr[j] > arr[j+1], jump to SWAP
 
 (RETURN)
 @j
@@ -62,13 +60,12 @@ D=M
 @inner
 D=D-M
 @INNERLOOP
-D;JLT
+D;JLT    // If inner boundary is not reached, jump to INNERLOOP
 
-// No swap means array is sorted. End the program
 @R5
 D=M
 @END
-D;JEQ
+D;JEQ    // If no swap happened, array is sorted. Jump to END
 
 @i
 M=M+1
@@ -76,13 +73,13 @@ D=M
 @outer
 D=D-M
 @OUTERLOOP
-D;JLT
+D;JLT    // If outer boundary is not reached, jump to OUTERLOOP
 
 (END)
 @R0
 M=-1    // Signalling the array is sorted
 @END
-0;JMP  // End the program
+0;JMP    // End the program
 
 (SWAP)
 @R5
@@ -91,17 +88,17 @@ M=-1   // Set swap flag to true
 A=M
 D=M
 @R13
-M=D
+M=D    // Store arr[j] to R13
 @R12
 A=M
 D=M
 @R11
 A=M
-M=D
+M=D    // Swap arr[j] and arr[j+1]
 @R13
 D=M
 @R12
 A=M
-M=D
+M=D    // Swap arr[j+1] and arr[j]
 @RETURN
-0;JMP
+0;JMP    // Return to INNERLOOP
