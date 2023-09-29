@@ -2,106 +2,105 @@
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
 // Put your code here.
+@R1 // the address of arr[0]
+D=M-1 // substract 1 because the array starts from arr[0]
+@R2 // the length
+M=M+D // now R2 is the address of the last element
 
-// Initialize loop counters and temporary variables
-@i         // Outer loop counter
-M=0
-@j         // Inner loop counter
-M=0
-@R2        // Assume R2 holds the length of the array
-D=M
-@outer     // Set outer loop boundary
-M=D
-@inner     // Set inner loop boundary
-M=D-1
-
-// Set a flag value in R5 to track if any swaps are made
-@R5
-M=0    // Initialize as 0 (no swaps)
-
-(OUTERLOOP)
-@R5
-M=0    // Reset swap flag at the start of each outer loop iteration
-@i
-D=M
-@inner
-M=M-D    // Update inner boundary per outer counter
-@j
-M=0    // Reset inner counter j
-
-(INNERLOOP)
-@j
-D=M
+(OUTER_LOOP)
+(CHECK_TERMINATE)
 @R1
-A=M+D    // Compute the address of arr[j]
-D=A
-@R11
-M=D    // Store address of arr[j] to R11
-@j
-D=M+1
-@R1
-A=M+D    // Compute the address of arr[j+1]
-D=A
-@R12
-M=D    // Store address of arr[j+1] to R12
-
-// Compare and possibly swap arr[j] and arr[j+1]
-@R11
-A=M
 D=M
-@R12
-A=M
+@R2
 D=D-M
-@SWAP
+@FINISH
 D;JGT
-
-(RETURN)
-@j
-M=M+1
+@R1
 D=M
-@inner
+@R3 // use R3 as the index of the inner loop.
+M=D+1 
+
+
+(INNER_LOOP)
+(CHECK_INNER_END)
+@R3
+D=M
+@R2
 D=D-M
-@INNERLOOP
-D;JLT
-
-// No swap means array is sorted. End the program
-@R5
+@INNER_FINISH
+D;JGT
+@R3 // use inner index to locate the element.
+A=M
+D=M // now D contains the element pointed by the inner index.
+@ELEM_POS
+D;JGE
+@ELEM_NEG
+0;JMP
+(SWAP) // swap the value pointed by the inner and outer index pointer
+@R1
+A=M
 D=M
-@END
-D;JEQ
-
-@i
+@temp
+M=D
+@R3
+A=M
+D=M
+@R1
+A=M
+M=D
+@temp
+D=M
+@R3
+A=M
+M=D
+(SKIP)
+@R3
 M=M+1
-D=M
-@outer
-D=D-M
-@OUTERLOOP
-D;JLT
+@INNER_LOOP
+0;JMP
 
-(END)
+(INNER_FINISH)
+@R1
+M=M+1
+@OUTER_LOOP
+0;JMP
+
+(FINISH)
 @R0
-M=-1    // Signalling the array is sorted
+M=-1
+(END)
 @END
-0;JMP  // End the program
+0;JMP
 
-(SWAP)
-@R5
-M=-1   // Set swap flag to true
-@R11
+(REF_NEG)
+
+(REF_POS)
+// subs
+@R3
 A=M
 D=M
-@R13
-M=D
-@R12
+@R1
+A=M
+D=D-M // substraction, may cause Overflow!
+@SKIP
+D;JGE
+@SWAP
+0;JMP
+
+(ELEM_NEG)
+@R1
 A=M
 D=M
-@R11
+@REF_NEG
+D;JLT
+@SWAP
+0;JMP
+
+(ELEM_POS)
+@R1
 A=M
-M=D
-@R13
 D=M
-@R12
-A=M
-M=D
-@RETURN
+@REF_POS
+D;JGE
+@SKIP
 0;JMP
