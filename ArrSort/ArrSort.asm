@@ -80,7 +80,7 @@ D;JLT
 
 (END)
 @R0
-M=0    // Signalling the array is sorted
+M=-1    // Signalling the array is sorted
 @END
 0;JMP  // End the program
 
