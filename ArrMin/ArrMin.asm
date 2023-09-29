@@ -2,72 +2,87 @@
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
 // Put your code here.
-@R1
-D=M-1
-@R2
-M=M+D
 
+// Initialize Pointers and addresses
+@R1 // Address of arr[0]
+D=M-1 // Adjust for array starting from arr[0]
+@R2 // Address of the length
+M=M+D // Set R2 to the address of the last element
+
+// Set R0 with the maximum value 32767
 @32767
 D=A
 @R0
 M=D
 
-(LOOP)
-(CHECK_TERMINATE)
-@R1
-D=M
-@R2
-D=D-M
-@END
-D;JGT
+(MainLoop)
+    // Check Termination Condition
+    (CheckTerminate)
+    @R1
+    D=M
+    @R2
+    D=D-M
+    @EndLoop
+    D;JGT // If D>0, jump to EndLoop
+    
+    // Check Element Position
+    @R1
+    A=M
+    D=M
+    @PosCheck
+    D;JGE // If D>=0, jump to PosCheck
+    @NegCheck
+    0;JMP // Else, jump to NegCheck
+    
+    // Update R0
+    (UpdateR0)
+    @R1
+    A=M
+    D=M
+    @R0
+    M=D
+    
+    // Skip to next element
+    (SkipElement)
+    @R1
+    M=M+1
+    @MainLoop
+    0;JMP // Jump back to MainLoop
+
+// End of Loop
+(EndLoop)
+@EndLoop
+0;JMP // End the execution
+
+// Substraction and Checks
+(NegR0)
+(PosR0)
+
+// Perform Subtraction
 @R1
 A=M
 D=M
-@ELEM_POS
-D;JGE
-@ELEM_NEG
-0;JMP
-(UPDATE)
-@R1
-A=M
-D=M
 @R0
-M=D
-(SKIP)
-@R1
-M=M+1
-@LOOP
-0;JMP
-(END)
-@END
+D=D-M // Subtraction, may cause Overflow!
+@SkipUpdate
+D;JGE // If D>=0, jump to SkipUpdate
+@UpdateR0
 0;JMP
 
-(R0_NEG)
-
-(R0_POS)
-// subs
-@R1
-A=M
-D=M
+// Check for Negative Element
+(NegCheck)
 @R0
-D=D-M // substraction, may cause Overflow!
-@SKIP
-D;JGE
-@UPDATE
+D=M
+@NegR0
+D;JLT // If D<0, jump to NegR0
+@UpdateR0
 0;JMP
 
-(ELEM_NEG)
+// Check for Positive Element
+(PosCheck)
 @R0
 D=M
-@R0_NEG
-D;JLT
-@UPDATE
-0;JMP
-
-(ELEM_POS)
-@R0
-D=M
-@R0_POS
-D;JGE
-@SKIP
+@PosR0
+D;JGE // If D>=0, jump to PosR0
+@SkipElement
 0;JMP
