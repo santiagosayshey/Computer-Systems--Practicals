@@ -2,120 +2,110 @@
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
 // Put your code here.
+@R1 
+D=M-1 
+@R2
+M=M+D 
 
-// Initializing Pointers and addresses
-@R1 // Set to the address of arr[0]
-D=M-1 // Subtract 1 to account for array starting from arr[0]
-@R2 // Set to the length of the array
-M=M+D // Update R2 to the address of the last element
+(OUTER)
 
-(OuterLoopStart)
-    // Check Termination Condition of Outer Loop
-    (CheckOuterTerminate)
+    (EARLY_TERMINATE)
     @R1
     D=M
     @R2
     D=D-M
-    @ProgramEnd
-    D;JGT // If D>0, jump to ProgramEnd
-    
+    @SORTED
+    D;JGT
     @R1
     D=M
-    @R3 // Set R3 as the index of the inner loop
+    @R3
     M=D+1 
-    
-    // Inner Loop starts here
-    (InnerLoopStart)
-        // Check Termination Condition of Inner Loop
-        (CheckInnerTerminate)
-        @R3
-        D=M
-        @R2
-        D=D-M
-        @InnerLoopEnd
-        D;JGT // If D>0, jump to InnerLoopEnd
-        
-        // Check Element Position
-        @R3 // Set to inner index to locate the element
-        A=M
-        D=M // D now contains the element pointed by the inner index
-        @PosElementCheck
-        D;JGE // If D>=0, jump to PosElementCheck
-        @NegElementCheck
-        0;JMP // Else, jump to NegElementCheck
-        
-        // Swap the values pointed by the inner and outer index pointers
-        (SwapElements) 
-        @R1
-        A=M
-        D=M
-        @temp
-        M=D
-        @R3
-        A=M
-        D=M
-        @R1
-        A=M
-        M=D
-        @temp
-        D=M
-        @R3
-        A=M
-        M=D
-        
-        // Skip to next inner index
-        (SkipInner)
-        @R3
-        M=M+1
-        @InnerLoopStart
-        0;JMP // Jump back to InnerLoopStart
 
-    // End of Inner Loop
-    (InnerLoopEnd)
+
+(INNER)
+
+    (CHECK_INNER_END)
+    @R3
+    D=M
+    @R2
+    D=D-M
+    @NEXT_INNER
+    D;JGT
+    @R3 
+    A=M
+    D=M 
+    @ELEM_POS
+    D;JGE
+    @ELEM_NEG
+    0;JMP
+
+    (SWAP) // swap if smaller
     @R1
-    M=M+1 // Move to the next outer index
-    @OuterLoopStart
-    0;JMP // Jump back to OuterLoopStart
+    A=M
+    D=M
+    @temp
+    M=D
+    @R3
+    A=M
+    D=M
+    @R1
+    A=M
+    M=D
+    @temp
+    D=M
+    @R3
+    A=M
+    M=D
 
-// End of Outer Loop
-(ProgramEnd)
+    (SKIP)
+    @R3
+    M=M+1
+    @INNER
+
+0;JMP
+
+    (NEXT_INNER)
+    @R1
+    M=M+1
+    @OUTER
+    0;JMP
+
+(SORTED)
 @R0
-M=-1 // Set R0 to -1
+M=-1
+(END)
+@END
+0;JMP
 
-// End of program
-(EndExecution)
-@EndExecution
-0;JMP // Jump to EndExecution to finish execution
+(REF_NEG)
 
-// Reference Position Checks and Subtraction Operations
-(NegRefCheck)
-(PosRefCheck)
-// Perform Subtraction Operation
+(REF_POS)
+// subs
 @R3
 A=M
 D=M
 @R1
 A=M
-D=D-M // Subtraction, may cause Overflow!
-@SkipSubstraction
-D;JGE // If D>=0, jump to SkipSubstraction
-@SwapElements
+D=D-M
+@SKIP
+D;JGE
+@SWAP
 0;JMP
 
-(NegElementCheck)
+(ELEM_NEG)
 @R1
 A=M
 D=M
-@NegRefCheck
-D;JLT // If D<0, jump to NegRefCheck
-@SwapElements
+@REF_NEG
+D;JLT
+@SWAP
 0;JMP
 
-(PosElementCheck)
+(ELEM_POS)
 @R1
 A=M
 D=M
-@PosRefCheck
-D;JGE // If D>=0, jump to PosRefCheck
-@SkipInner
+@REF_POS
+D;JGE
+@SKIP
 0;JMP
