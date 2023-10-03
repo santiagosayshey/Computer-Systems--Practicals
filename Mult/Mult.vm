@@ -4,7 +4,95 @@
 
 // Put your code here.
 
+label INIT
+    // init a to 0
+    push constant 0
+    pop local 0
 
+    // init counter to 0
+    push constant 0
+    pop temp 0
+
+    // store the sign of x
+    push static 0
+    push constant 0
+    lt
+    pop temp 1
+
+    // store the sign of y
+    push static 1
+    push constant 0
+    lt
+    pop temp 2
+
+    // check if y is NEGATIVE
+    push temp 2
+    if-goto FLIP_Y
+    goto CHECK_COUNTER
+
+label FLIP_Y
+    // flip the sign of y
+    push static 1
+    neg
+    pop static 1
+
+label CHECK_COUNTER
+    // check if 
+    push temp 0
+    push static 1
+    lt
+    if-goto ADD
+    goto SIGN_FLIP
+
+label ADD
+    // add x to a
+    push local 0
+    push static 0
+    add
+    pop local 0
+
+    // increment counter by 1
+    push constant 1
+    push temp 0
+    add
+    pop temp 0
+
+    goto CHECK_COUNTER
+
+label SIGN_FLIP
+    push temp 1
+    push temp 2
+    and
+    if-goto BOTH_NEGATIVE
+
+    push temp 1
+    push temp 2
+    or
+    if-goto ONE_NEGATIVE
+    goto END
+
+label ONE_NEGATIVE
+    push temp 2
+    if-goto FLIP_Y_END
+    goto END
+
+label FLIP_Y_END
+    push local 0
+    neg
+    pop local 0
+    push static 1
+    neg
+    pop static 1
+    goto END
+
+label BOTH_NEGATIVE
+    push local 0
+    neg
+    pop local 0
+    push static 1
+    neg
+    pop static 1
+    goto END
 
 label END
-goto END
+    goto END
