@@ -1,8 +1,11 @@
 #include <string>
-
 #include "VMTranslator.h"
 
 using namespace std;
+
+// Declare static members
+string VMTranslator::functionName = ""; // or provide a default function name if desired
+int VMTranslator::labelCounter = 0;
 
 /**
  * VMTranslator constructor
@@ -80,8 +83,6 @@ string VMTranslator::vm_sub(){
 string VMTranslator::vm_neg(){
     return "";
 }
-
-int VMTranslator::labelCounter = 0;
 
 /** Generate Hack Assembly code for a VM eq operation */
 string VMTranslator::vm_eq(){
