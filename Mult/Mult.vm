@@ -13,86 +13,91 @@ label INIT
     push constant 0
     pop temp 0
 
-    // store the sign of x
+    // get smaller number
     push static 0
-    push constant 0
+    push static 1
     lt
+    if-goto X_SMALLER
+    goto Y_SMALLER
+
+label Y_SMALLER
+    push static 1
+    pop temp 2
+    push static 0
     pop temp 1
 
-    // store the sign of y
+label X_SMALLER
+    push static 0
+    pop temp 2
     push static 1
+    pop temp 1
+
+label SIGN_1
+    push temp 1
     push constant 0
     lt
-    pop temp 2
+    if-goto FLIP_1
 
-    // check if y is NEGATIVE
+label SIGN_2
     push temp 2
-    if-goto FLIP_Y
+    push constant 0
+    lt
+    if-goto FLIP_2
     goto CHECK_COUNTER
 
-label FLIP_Y
-    // flip the sign of y
-    push static 1
+label FLIP_1
+    push temp 1
     neg
-    pop static 1
+    pop temp 1
+    push constant 1
+    neg
+    pop temp 3
+    goto SIGN_2
+
+label FLIP_2
+    push temp 2
+    neg
+    pop temp 2
+    push constant 1
+    neg
+    pop temp 4
 
 label CHECK_COUNTER
-    // check if 
     push temp 0
-    push static 1
+    push temp 2
     lt
     if-goto ADD
-    goto SIGN_FLIP
+    goto FLIP_ANSWER
 
 label ADD
-    // add x to a
     push local 0
-    push static 0
+    push temp 1
     add
     pop local 0
 
-    // increment counter by 1
-    push constant 1
     push temp 0
+    push constant 1
     add
     pop temp 0
-
     goto CHECK_COUNTER
 
-label SIGN_FLIP
-    push temp 1
-    push temp 2
+label FLIP_ANSWER
+    push temp 3
+    push temp 4
     and
-    if-goto BOTH_NEGATIVE
-
-    push temp 1
-    push temp 2
+    if-goto END
+    push temp 3
+    push temp 4
     or
-    if-goto ONE_NEGATIVE
+    if-goto NEGATIVE
+
     goto END
 
-label ONE_NEGATIVE
-    push temp 2
-    if-goto FLIP_Y_END
-    goto END
-
-label FLIP_Y_END
+label NEGATIVE
     push local 0
     neg
     pop local 0
-    push static 1
-    neg
-    pop static 1
-    goto END
-
-label BOTH_NEGATIVE
-    push local 0
-    neg
-    pop local 0
-    push static 1
-    neg
-    pop static 1
-    goto END
 
 label END
     goto END
+
