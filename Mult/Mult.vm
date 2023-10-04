@@ -15,13 +15,6 @@ label INIT
     pop temp 0
 
     push static 0
-    push static 1
-    lt
-    if-goto X_SMALLER
-    goto Y_SMALLER
-
-label X_SMALLER
-    push static 0
     pop temp 3
     push static 1
     pop temp 4
@@ -29,58 +22,42 @@ label X_SMALLER
     push temp 3
     push constant 0
     lt
-    if-goto FLIP_X_SMALLER
-    goto CHECK_Y_BIGGER
+    if-goto FLIP_X
+    goto CHECK_Y
 
-label FLIP_X_SMALLER
-    push temp 3
-    neg
-    pop temp 3
-
-label CHECK_Y_BIGGER
+label CHECK_Y
     push temp 4
     push constant 0
     lt
-    if-goto FLIP_Y_BIGGER
-    goto CHECK_COUNTER
+    if-goto FLIP_Y
+    goto STORE_SMALLER
 
-label FLIP_Y_BIGGER
+label FLIP_X
+    push temp 3
+    neg
+    pop temp 3
+    goto CHECK_Y
+
+label FLIP_Y
     push temp 4
     neg
     pop temp 4
+    goto STORE_SMALLER
+
+label STORE_SMALLER
+    push temp 4
+    push temp 3
+    lt
+    if-goto Y_SMALLER
     goto CHECK_COUNTER
-    
 
 label Y_SMALLER
-    push static 1
-    pop temp 3
-    push static 0
-    pop temp 4
-    
     push temp 3
-    push constant 0
-    lt
-    if-goto FLIP_X_BIGGER
-    goto CHECK_Y_SMALLER
-
-label FLIP_X_BIGGER
-    push temp 3
-    neg
+    pop temp 5
+    push temp 4
     pop temp 3
-
-label CHECK_Y_SMALLER
-    push temp 4
-    push constant 0
-    lt
-    if-goto FLIP_Y_SMALLER
-    goto CHECK_COUNTER
-
-label FLIP_Y_SMALLER
-    push temp 4
-    neg
+    push temp 5
     pop temp 4
-    goto CHECK_COUNTER
-
 
 label CHECK_COUNTER
     // check if 
@@ -121,6 +98,6 @@ label ONE_NEGATIVE
     push local 0
     neg
     pop local 0
-    
+
 label END
     goto END
