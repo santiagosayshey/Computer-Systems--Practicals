@@ -23,46 +23,56 @@ VMTranslator::~VMTranslator() {
 
 /** Generate Hack Assembly code for a VM push operation */
 string VMTranslator::vm_push(string segment, int offset) {
+    string result = "";
+    string indexStr = std::to_string(offset);
+
     if (segment == "constant") {
-        return "@" + std::to_string(offset) + "\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
-    }
-    else if (segment == "local" || segment == "argument" || segment == "this" || segment == "that") {
+        result += "@" + indexStr + "\nD=A\n";
+    } else if (segment == "local" || segment == "argument" || segment == "this" || segment == "that") {
         string baseAddress = (segment == "local") ? "LCL" :
                              (segment == "argument") ? "ARG" :
                              (segment == "this") ? "THIS" : "THAT";
-        return "@" + baseAddress + "\nD=M\n@" + std::to_string(offset) + "\nA=D+A\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+        result += "@" + baseAddress + "\nD=M\n@" + indexStr + "\nA=D+A\nD=M\n";
+    } else if (segment == "static") {
+        result += "@" + functionName + "." + indexStr + "\nD=M\n";
+    } else if (segment == "pointer") {
+        result += "@R" + std::to_string(3 + offset) + "\nD=M\n";
+    } else if (segment == "temp") {
+        result += "@R" + std::to_string(5 + offset) + "\nD=M\n";
+    } else {
+        return "// Invalid segment for push\n";
     }
-    else if (segment == "static") {
-        return "@" + functionName + "." + std::to_string(offset) + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
-    }
-    else if (segment == "pointer") {
-        return "@R" + std::to_string(3 + offset) + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
-    }
-    else if (segment == "temp") {
-        return "@R" + std::to_string(5 + offset) + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
-    }
-    return "";
+
+    // Common steps for all segments in push
+    result += "@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+    
+    return result;
 }
 
 /** Generate Hack Assembly code for a VM pop operation */
 string VMTranslator::vm_pop(string segment, int offset) {
+    string result = "";
+    string indexStr = std::to_string(offset);
+
     if (segment == "local" || segment == "argument" || segment == "this" || segment == "that") {
         string baseAddress = (segment == "local") ? "LCL" :
                              (segment == "argument") ? "ARG" :
                              (segment == "this") ? "THIS" : "THAT";
-        return "@" + baseAddress + "\nD=M\n@" + std::to_string(offset) + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n";
+        result += "@" + baseAddress + "\nD=M\n@" + indexStr + "\nD=D+A\n@R13\nM=D\n";  // Address stored in R13
+        result += "@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n";  // Pop and store in address
+    } else if (segment == "static") {
+        result += "@SP\nAM=M-1\nD=M\n@" + functionName + "." + indexStr + "\nM=D\n";
+    } else if (segment == "pointer") {
+        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(3 + offset) + "\nM=D\n";
+    } else if (segment == "temp") {
+        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(5 + offset) + "\nM=D\n";
+    } else {
+        return "// Invalid segment for pop\n";
     }
-    else if (segment == "static") {
-        return "@SP\nAM=M-1\nD=M\n@" + functionName + "." + std::to_string(offset) + "\nM=D\n";
-    }
-    else if (segment == "pointer") {
-        return "@SP\nAM=M-1\nD=M\n@R" + std::to_string(3 + offset) + "\nM=D\n";
-    }
-    else if (segment == "temp") {
-        return "@SP\nAM=M-1\nD=M\n@R" + std::to_string(5 + offset) + "\nM=D\n";
-    }
-    return "";
+
+    return result;
 }
+
 
 /** Generate Hack Assembly code for a VM add operation */
 string VMTranslator::vm_add(){
@@ -159,30 +169,96 @@ string VMTranslator::vm_not(){
 
 /** Generate Hack Assembly code for a VM label operation */
 string VMTranslator::vm_label(string label){
-    return "";
+    return "(" + label + ")\n";
 }
 
 /** Generate Hack Assembly code for a VM goto operation */
 string VMTranslator::vm_goto(string label){
-    return "";
+    return "@" + label + "\n0;JMP\n";
 }
 
 /** Generate Hack Assembly code for a VM if-goto operation */
 string VMTranslator::vm_if(string label){
-    return "";
+    return 
+    "@SP\n"        // Point to the current stack pointer.
+    "AM=M-1\n"     // Decrement the stack pointer and go to the topmost value.
+    "D=M\n"        // Pop the topmost value to D.
+    "@" + label + "\n"
+    "D;JNE\n";     // Jump if D (the popped value) is not 0.
 }
 
 /** Generate Hack Assembly code for a VM function operation */
 string VMTranslator::vm_function(string function_name, int n_vars){
-    return "";
+    string code = "(" + function_name + ")\n";  // Create the function label
+
+    // Initialize the local variables to 0 and push them to the stack
+    for(int i = 0; i < n_vars; i++) {
+        code += "@0\n"          // Load constant 0
+                "D=A\n"          // Store it in D
+                "@SP\n"          // Point to the current stack pointer
+                "A=M\n"          // Go to the top of the stack
+                "M=D\n"          // Push 0 to the stack
+                "@SP\n"          // Increment stack pointer
+                "M=M+1\n";
+    }
+
+    return code;
 }
 
 /** Generate Hack Assembly code for a VM call operation */
 string VMTranslator::vm_call(string function_name, int n_args){
-    return "";
+    // Unique label for returning after the function is done
+    string returnLabel = "RETURN_" + function_name + "_" + to_string(labelCounter++);
+    string code = "";
+
+    // Push the return address
+    code += "@" + returnLabel + "\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+
+    // Save LCL, ARG, THIS, and THAT
+    string segments[] = {"LCL", "ARG", "THIS", "THAT"};
+    for (string segment : segments) {
+        code += "@" + segment + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+    }
+
+    // ARG = SP - n_args - 5
+    code += "@SP\nD=M\n@" + to_string(n_args + 5) + "\nD=D-A\n@ARG\nM=D\n";
+
+    // LCL = SP
+    code += "@SP\nD=M\n@LCL\nM=D\n";
+
+    // Goto function
+    code += "@" + function_name + "\n0;JMP\n";
+
+    // Declare the return label
+    code += "(" + returnLabel + ")\n";
+
+    return code;
 }
 
 /** Generate Hack Assembly code for a VM return operation */
 string VMTranslator::vm_return(){
-    return "";
+    string code = "";
+
+    // EndFrame = LCL (temporary variable)
+    code += "@LCL\nD=M\n@R13\nM=D\n";  // We'll use R13 as EndFrame
+
+    // RET = *(EndFrame-5)
+    code += "@5\nA=D-A\nD=M\n@R14\nM=D\n";  // We'll use R14 as RET
+
+    // *ARG = pop()
+    code += "@SP\nAM=M-1\nD=M\n@ARG\nA=M\nM=D\n";
+
+    // SP = ARG+1
+    code += "@ARG\nD=M+1\n@SP\nM=D\n";
+
+    // Restore THAT, THIS, ARG, LCL
+    string segments[] = {"THAT", "THIS", "ARG", "LCL"};
+    for (int i = 1; i <= 4; i++) {
+        code += "@R13\nD=M\n@" + to_string(i) + "\nA=D-A\nD=M\n@" + segments[i-1] + "\nM=D\n";
+    }
+
+    // Goto RET
+    code += "@R14\nA=M\n0;JMP\n";
+
+    return code;
 }
