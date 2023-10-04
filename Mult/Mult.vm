@@ -19,6 +19,16 @@ label INIT
     push static 1
     pop temp 4
 
+    push static 0
+    push constant 0
+    lt
+    pop temp 1
+
+    push static 1
+    push constant 0
+    lt
+    pop temp 2
+
     push temp 3
     push constant 0
     lt
