@@ -2,6 +2,7 @@
 // a is a local variable
 // x & y are static variables
 
+
 // Put your code here.
 
 label INIT
@@ -13,91 +14,113 @@ label INIT
     push constant 0
     pop temp 0
 
-    // get smaller number
     push static 0
     push static 1
     lt
     if-goto X_SMALLER
     goto Y_SMALLER
 
-label Y_SMALLER
-    push static 1
-    pop temp 2
-    push static 0
-    pop temp 1
-
 label X_SMALLER
     push static 0
-    pop temp 2
-    push static 1
-    pop temp 1
-
-label SIGN_1
-    push temp 1
-    push constant 0
-    lt
-    if-goto FLIP_1
-
-label SIGN_2
-    push temp 2
-    push constant 0
-    lt
-    if-goto FLIP_2
-    goto CHECK_COUNTER
-
-label FLIP_1
-    push temp 1
-    neg
-    pop temp 1
-    push constant 1
-    neg
     pop temp 3
-    goto SIGN_2
-
-label FLIP_2
-    push temp 2
-    neg
-    pop temp 2
-    push constant 1
-    neg
+    push static 1
     pop temp 4
 
+    push temp 3
+    push constant 0
+    lt
+    if-goto FLIP_X_SMALLER
+    goto CHECK_Y_BIGGER
+
+label FLIP_X_SMALLER
+    push temp 3
+    neg
+    pop temp 3
+
+label CHECK_Y_BIGGER
+    push temp 4
+    push constant 0
+    lt
+    if-goto FLIP_Y_BIGGER
+    goto CHECK_COUNTER
+
+label FLIP_Y_BIGGER
+    push temp 4
+    neg
+    pop temp 4
+    goto CHECK_COUNTER
+    
+
+label Y_SMALLER
+    push static 1
+    pop temp 3
+    push static 0
+    pop temp 4
+    
+    push temp 3
+    push constant 0
+    lt
+    if-goto FLIP_X_BIGGER
+    goto CHECK_Y_SMALLER
+
+label FLIP_X_BIGGER
+    push temp 3
+    neg
+    pop temp 3
+
+label CHECK_Y_SMALLER
+    push temp 4
+    push constant 0
+    lt
+    if-goto FLIP_Y_SMALLER
+    goto CHECK_COUNTER
+
+label FLIP_Y_SMALLER
+    push temp 4
+    neg
+    pop temp 4
+    goto CHECK_COUNTER
+
+
 label CHECK_COUNTER
+    // check if 
     push temp 0
-    push temp 2
+    push temp 3
     lt
     if-goto ADD
-    goto FLIP_ANSWER
+    goto SIGN_FLIP
 
 label ADD
+    // add x to a
     push local 0
-    push temp 1
+    push temp 4
     add
     pop local 0
 
-    push temp 0
+    // increment counter by 1
     push constant 1
+    push temp 0
     add
     pop temp 0
     goto CHECK_COUNTER
 
-label FLIP_ANSWER
-    push temp 3
-    push temp 4
+
+label SIGN_FLIP
+    push temp 1
+    push temp 2
     and
     if-goto END
-    push temp 3
-    push temp 4
+
+    push temp 1
+    push temp 2
     or
-    if-goto NEGATIVE
+    if-goto ONE_NEGATIVE
 
     goto END
-
-label NEGATIVE
+label ONE_NEGATIVE
     push local 0
     neg
     pop local 0
-
+    
 label END
     goto END
-
