@@ -23,33 +23,50 @@ VMTranslator::~VMTranslator() {
 /** Generate Hack Assembly code for a VM push operation */
 string VMTranslator::vm_push(string segment, int offset) {
     string assembly_code;
+    string indexStr = to_string(offset);
 
     if (segment == "constant") {
-        assembly_code = "@" + to_string(offset) + "\n"
+        assembly_code = "@" + indexStr + "\n"
                         + "D=A\n"
                         + "@SP\n"
-                        + "AM=M+1\n"
-                        + "A=A-1\n"
-                        + "M=D\n";
-    } else {
-        string base_address;
-
-        if (segment == "local") base_address = "@LCL";
-        else if (segment == "argument") base_address = "@ARG";
-        else if (segment == "this") base_address = "@THIS";
-        else if (segment == "that") base_address = "@THAT";
-        else if (segment == "pointer") base_address = "@3"; // Base address for pointer is 3
-        else if (segment == "temp") base_address = "@5";   // Base address for temp is 5
-
-        assembly_code = base_address + "\n"
-                        + "D=M\n"
-                        + "@" + to_string(offset) + "\n"
-                        + "A=D+A\n"       // Calculate effective address
-                        + "D=M\n"
+                        + "A=M\n"
+                        + "M=D\n"
                         + "@SP\n"
-                        + "AM=M+1\n"      // Increment stack pointer and update A register
-                        + "A=A-1\n"
-                        + "M=D\n";       // Store value at the top of the stack
+                        + "M=M+1\n";
+    } else {
+        string registerStr;
+
+        if (segment == "local") registerStr = "@LCL";
+        else if (segment == "argument") registerStr = "@ARG";
+        else if (segment == "this") registerStr = "@THIS";
+        else if (segment == "that") registerStr = "@THAT";
+        else if (segment == "pointer") registerStr = "@3"; // Base address for pointer is 3
+        else if (segment == "temp") registerStr = "@5";    // Base address for temp is 5
+        else if (segment == "static") registerStr = "@" + indexStr;
+
+        if (segment == "static" || segment == "pointer" || segment == "temp") {
+            assembly_code = "@" + registerStr + "\n"
+                            + "D=A\n"
+                            + "@" + indexStr + "\n"
+                            + "A=D+A\n"
+                            + "D=M\n"
+                            + "@SP\n"
+                            + "A=M\n"
+                            + "M=D\n"
+                            + "@SP\n"
+                            + "M=M+1\n";
+        } else {
+            assembly_code = "@" + registerStr + "\n"
+                            + "D=M\n"
+                            + "@" + indexStr + "\n"
+                            + "A=D+A\n"
+                            + "D=M\n"
+                            + "@SP\n"
+                            + "A=M\n"
+                            + "M=D\n"
+                            + "@SP\n"
+                            + "M=M+1\n";
+        }
     }
     return assembly_code;
 }
