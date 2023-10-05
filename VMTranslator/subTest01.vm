@@ -1,0 +1,4 @@
+// Test for subtracting two constants
+push constant 9
+push constant 2
+sub

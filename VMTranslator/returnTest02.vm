@@ -1,0 +1,11 @@
+// Test function return with argument manipulation and return value
+function SumAndReturn 1
+  push argument 0
+  push local 0
+  add
+  return
+
+push constant 4
+push constant 3
+call SumAndReturn 2
+

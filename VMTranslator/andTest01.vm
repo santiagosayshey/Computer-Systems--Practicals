@@ -1,0 +1,4 @@
+// Test for bitwise AND operation
+push constant 5  // binary: 0101
+push constant 3  // binary: 0011
+and

@@ -1,0 +1,3 @@
+// Test for popping another value from the stack to a different segment (assuming segments and stack have values)
+push constant 7
+pop argument 1

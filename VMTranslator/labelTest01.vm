@@ -1,0 +1,3 @@
+// Test for creating and jumping to a label
+label LOOP_START
+goto LOOP_START

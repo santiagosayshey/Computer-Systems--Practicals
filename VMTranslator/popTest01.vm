@@ -1,0 +1,3 @@
+// Test for popping a value from the stack to a segment
+push constant 10
+pop local 2

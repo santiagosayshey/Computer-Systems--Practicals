@@ -1,0 +1,9 @@
+// Test unconditional jumps
+push constant 5      
+pop local 0          // Set local[0] = 5
+goto SetTen
+push constant 8      
+pop local 0          // This should not be executed
+label SetTen
+push constant 10
+pop local 0          // Set local[0] = 10

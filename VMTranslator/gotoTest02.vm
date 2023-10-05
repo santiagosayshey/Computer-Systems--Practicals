@@ -1,0 +1,17 @@
+// Test multiple jumps and labels
+push constant 7
+pop local 1          // Set local[1] = 7
+goto JumpHere
+push constant 11
+pop local 1          // This should not be executed
+label FirstLabel
+push constant 20
+pop local 2          // Set local[2] = 20
+goto EndTest
+push constant 50
+pop local 2          // This should not be executed
+label JumpHere
+push constant 15
+pop local 1          // Set local[1] = 15
+goto FirstLabel
+label EndTest

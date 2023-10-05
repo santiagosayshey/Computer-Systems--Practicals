@@ -1,0 +1,3 @@
+// Test for bitwise NOT operation
+push constant 2  // binary: 0010
+not              // expected result: 1101 (-3 in two's complement)

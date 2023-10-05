@@ -1,0 +1,4 @@
+// Test with multiple labels
+label FIRST
+goto SECOND
+label SECOND

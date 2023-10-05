@@ -1,0 +1,4 @@
+// Test for checking equality of two numbers
+push constant 4
+push constant 4
+eq

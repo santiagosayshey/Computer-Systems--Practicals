@@ -1,0 +1,4 @@
+// Test for adding two constants
+push constant 3
+push constant 4
+add

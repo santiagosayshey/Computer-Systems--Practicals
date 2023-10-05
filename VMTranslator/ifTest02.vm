@@ -1,0 +1,4 @@
+// Test conditional jump when top of the stack is 0
+push constant 0
+if-goto FIRST
+label SECOND
