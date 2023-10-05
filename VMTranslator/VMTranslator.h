@@ -33,9 +33,11 @@ class VMTranslator {
         static string vm_function(string function_name, int n_vars);
         static string vm_call(string function_name, int n_args);
         static string vm_return();
+
+        static string registerName(string segment, int index);
     private:
-    static string functionName;
-    static int labelCounter;
+        
+        static int labelCounter;
         
 };
 

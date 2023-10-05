@@ -4,7 +4,6 @@
 using namespace std;
 
 // Declare static members
-string VMTranslator::functionName = ""; // or provide a default function name if desired
 int VMTranslator::labelCounter = 0;
 
 /**
@@ -22,93 +21,104 @@ VMTranslator::~VMTranslator() {
 }
 
 /** Generate Hack Assembly code for a VM push operation */
-string VMTranslator::vm_push(string segment, int offset) {
-    string result = "";
-    string index = to_string(offset);
+string VMTranslator::vm_push(string segment, int offset)
+{
+    string assemblyCode = "";
+    string indexStr = to_string(offset);
+    string registerStr = registerName(segment, offset);
 
-    if (segment == "constant") {
-        result = result + "@" + index + "\n"
-                + "D=A\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "local") {
-        result = result + "@LCL\n"
-                + "D=M\n"
-                + "@" + index + "\n"
-                + "A=D+A\n"
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "argument") {
-        result = result + "@ARG\n"
-                + "D=M\n"
-                + "@" + index + "\n"
-                + "A=D+A\n"
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "this") {
-        result = result + "@THIS\n"
-                + "D=M\n"
-                + "@" + index + "\n"
-                + "A=D+A\n"
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "that") {
-        result = result + "@THAT\n"
-                + "D=M\n"
-                + "@" + index + "\n"
-                + "A=D+A\n"
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "static") {
-        result = result + "@" + functionName + "." + index + "\n" // Assuming functionName is a class member
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else {
-        return "// Invalid segment for push";
+    if(segment == "constant")
+    {
+        assemblyCode += "@" + indexStr + " // push " + segment + " " + indexStr + "\n";
+        assemblyCode += "D=A\n";
+        assemblyCode += "@SP\n";
+        assemblyCode += "A=M\n";
+        assemblyCode += "M=D\n";
+        assemblyCode += "@SP\n";
+        assemblyCode += "M=M+1\n";
+    } 
+    else if(segment == "static" || segment == "temp" || segment == "pointer")
+    {
+        assemblyCode += "@" + registerStr + " // push " + segment + " " + indexStr + "\n";
+        assemblyCode += "D=A\n";
+        assemblyCode += "@" + indexStr + "\n";
+        assemblyCode += "A=D+A\n";
+        assemblyCode += "D=M\n";
+        assemblyCode += "@SP\n";
+        assemblyCode += "A=M\n";
+        assemblyCode += "M=D\n";
+        assemblyCode += "@SP\n";
+        assemblyCode += "M=M+1\n";
+    } 
+    else if(segment == "argument" || segment == "local" || segment == "this" || segment == "that")
+    {
+        assemblyCode += "@" + registerStr + " // push " + segment + " " + indexStr + "\n";
+        assemblyCode += "D=M\n";
+        assemblyCode += "@" + indexStr + "\n";
+        assemblyCode += "A=D+A\n";
+        assemblyCode += "D=M\n";
+        assemblyCode += "@SP\n";
+        assemblyCode += "A=M\n";
+        assemblyCode += "M=D\n";
+        assemblyCode += "@SP\n";
+        assemblyCode += "M=M+1\n";
+    }
+    else 
+    {
+        return assemblyCode;
     }
 
-    return result;
+    return assemblyCode;
 }
 
-/** Generate Hack Assembly code for a VM pop operation */
-string VMTranslator::vm_pop(string segment, int offset) {
-    string result = "";
-    string indexStr = std::to_string(offset);
 
-    if (segment == "local" || segment == "argument" || segment == "this" || segment == "that") {
-        string baseAddress = (segment == "local") ? "LCL" :
-                             (segment == "argument") ? "ARG" :
-                             (segment == "this") ? "THIS" : "THAT";
-        result += "@" + baseAddress + "\nD=M\n@" + indexStr + "\nD=D+A\n@R13\nM=D\n";  // Address stored in R13
-        result += "@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n";  // Pop and store in address
-    } else if (segment == "static") {
-        result += "@SP\nAM=M-1\nD=M\n@" + functionName + "." + indexStr + "\nM=D\n";
-    } else if (segment == "pointer") {
-        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(3 + offset) + "\nM=D\n";
-    } else if (segment == "temp") {
-        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(5 + offset) + "\nM=D\n";
-    } else {
-        return "// Invalid segment for pop\n";
+/** Generate Hack Assembly code for a VM pop operation */
+string VMTranslator::vm_pop(string segment, int offset)
+{
+    string assemblyCode = "";
+    string indexStr = to_string(offset);
+    string registerStr = registerName(segment, offset);
+
+    if(segment == "constant")
+    {
+        return assemblyCode;
+    } 
+    else if(segment == "static")
+    {
+        assemblyCode += "@" + registerStr + " // pop " + segment + " " + indexStr + "\n";
+        assemblyCode += "D=A\n";
+        assemblyCode += "@" + indexStr + "\n";
+        assemblyCode += "D=D+A\n";
+        assemblyCode += "@R13\n";
+        assemblyCode += "M=D\n";
+        assemblyCode += "@SP\n";
+        assemblyCode += "AM=M-1\n";
+        assemblyCode += "D=M\n";
+        assemblyCode += "@R13\n";
+        assemblyCode += "A=M\n";
+        assemblyCode += "M=D\n";
+    } 
+    else if(segment == "argument" || segment == "local" || segment == "this" || segment == "that" || segment == "temp" || segment == "pointer")
+    {
+        assemblyCode += "@" + registerStr + " // pop " + segment + " " + indexStr + "\n";
+        assemblyCode += "D=M\n";
+        assemblyCode += "@" + indexStr + "\n";
+        assemblyCode += "D=D+A\n";
+        assemblyCode += "@R13\n";
+        assemblyCode += "M=D\n";
+        assemblyCode += "@SP\n";
+        assemblyCode += "AM=M-1\n";
+        assemblyCode += "D=M\n";
+        assemblyCode += "@R13\n";
+        assemblyCode += "A=M\n";
+        assemblyCode += "M=D\n";
+    }
+    else 
+    {
+        return assemblyCode;
     }
 
-    return result;
+    return assemblyCode;
 }
 
 
@@ -299,4 +309,25 @@ string VMTranslator::vm_return(){
     code += "@R14\nA=M\n0;JMP\n";
 
     return code;
+}
+
+string VMTranslator::registerName(string segment, int index)
+{
+    if (segment == "static")
+        return "16";
+    if (segment == "local")
+        return "LCL";
+    if (segment == "argument")
+        return "ARG";
+    if (segment == "this")
+        return "THIS";
+    if (segment == "that")
+        return "THAT";
+    if (segment == "pointer")
+        return "R" + to_string(3 + index);
+    if (segment == "temp")
+        return "R" + to_string(5 + index);
+
+    string moduleName = "";
+    return moduleName + "." + to_string(index); // else it is static
 }
