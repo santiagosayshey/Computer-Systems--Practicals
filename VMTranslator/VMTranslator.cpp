@@ -27,12 +27,75 @@ string VMTranslator::vm_push(string segment, int offset) {
     string index = to_string(offset);
 
     if (segment == "constant") {
-        result = "@" + index + "\n"
+        result = result + "@" + index + "\n"
                 + "D=A\n"
                 + "@SP\n"
                 + "AM=M+1\n"
                 + "A=A-1\n"
                 + "M=D";
+    } else if (segment == "local") {
+        result = result + "@LCL\n"
+                + "D=M\n"
+                + "@" + index + "\n"
+                + "A=D+A\n"
+                + "D=M\n"
+                + "@SP\n"
+                + "AM=M+1\n"
+                + "A=A-1\n"
+                + "M=D";
+    } else if (segment == "argument") {
+        result = result + "@ARG\n"
+                + "D=M\n"
+                + "@" + index + "\n"
+                + "A=D+A\n"
+                + "D=M\n"
+                + "@SP\n"
+                + "AM=M+1\n"
+                + "A=A-1\n"
+                + "M=D";
+    } else if (segment == "this") {
+        result = result + "@THIS\n"
+                + "D=M\n"
+                + "@" + index + "\n"
+                + "A=D+A\n"
+                + "D=M\n"
+                + "@SP\n"
+                + "AM=M+1\n"
+                + "A=A-1\n"
+                + "M=D";
+    } else if (segment == "that") {
+        result = result + "@THAT\n"
+                + "D=M\n"
+                + "@" + index + "\n"
+                + "A=D+A\n"
+                + "D=M\n"
+                + "@SP\n"
+                + "AM=M+1\n"
+                + "A=A-1\n"
+                + "M=D";
+    } else if (segment == "static") {
+        result = result + "@" + functionName + "." + index + "\n" // Assuming functionName is a class member
+                + "D=M\n"
+                + "@SP\n"
+                + "AM=M+1\n"
+                + "A=A-1\n"
+                + "M=D";
+    } else if (segment == "pointer") {
+        result = result + "@R" + to_string(3 + offset) + "\n" // 3 + 0 or 3 + 1
+                + "D=M\n"
+                + "@SP\n"
+                + "AM=M+1\n"
+                + "A=A-1\n"
+                + "M=D";
+    } else if (segment == "temp") {
+        result = result + "@R" + to_string(5 + offset) + "\n" // Temp starts at RAM[5]
+                + "D=M\n"
+                + "@SP\n"
+                + "AM=M+1\n"
+                + "A=A-1\n"
+                + "M=D";
+    } else {
+        return "// Invalid segment for push";
     }
 
     return result;
