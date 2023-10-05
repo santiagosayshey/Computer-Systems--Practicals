@@ -103,12 +103,20 @@ string VMTranslator::vm_add(){
 
 /** Generate Hack Assembly code for a VM sub operation */
 string VMTranslator::vm_sub(){
-    return "";
+    return 
+    "@SP\n"
+    "AM=M-1\n"  // Decrement stack pointer and go to top of the stack
+    "D=M\n"     // Pop the top value into D
+    "A=A-1\n"   // Move to the second value on the stack
+    "M=M-D\n";  // Subtract D from the value currently at the top of the stack
 }
 
 /** Generate Hack Assembly code for a VM neg operation */
 string VMTranslator::vm_neg(){
-    return "";
+    return 
+    "@SP\n"
+    "A=M-1\n"  // Go to the top value on the stack
+    "M=-M\n";  // Negate it
 }
 
 /** Generate Hack Assembly code for a VM eq operation */
