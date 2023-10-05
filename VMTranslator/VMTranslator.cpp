@@ -73,15 +73,8 @@ string VMTranslator::vm_push(string segment, int offset) {
                 + "AM=M+1\n"
                 + "A=A-1\n"
                 + "M=D";
-    } else if (segment == "pointer") {
-        result = result + "@R" + to_string(3 + offset) + "\n" // 3 + 0 or 3 + 1
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "temp") {
-        result = result + "@R" + to_string(5 + offset) + "\n" // Temp starts at RAM[5]
+    } else if (segment == "static") {
+        result = result + "@" + functionName + "." + index + "\n" // Assuming functionName is a class member
                 + "D=M\n"
                 + "@SP\n"
                 + "AM=M+1\n"
