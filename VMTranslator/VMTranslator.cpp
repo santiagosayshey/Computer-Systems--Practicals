@@ -259,23 +259,54 @@ string VMTranslator::vm_gt(){
 }
 
 /** Generate Hack Assembly code for a VM lt operation */
-string VMTranslator::vm_lt(){
-    return "";
+string VMTranslator::vm_lt() {
+    static int lt_counter = 0;  // A counter to generate unique labels for each lt operation.
+    string lt_label_start = "LT_TRUE_" + std::to_string(lt_counter);
+    string lt_label_end = "LT_END_" + std::to_string(lt_counter);
+    lt_counter++;
+    
+    return "@SP\n"    // Pop y (y is on top)
+           "AM=M-1\n"
+           "D=M\n"
+           "A=A-1\n" // Pop x (x is the second from the top)
+           "D=M-D\n" // D = x - y
+           "@" + lt_label_start + "\n"
+           "D;JLT\n" // Jump if x < y
+           "@SP\n"
+           "A=M-1\n"
+           "M=0\n"   // x >= y, so set result to FALSE
+           "@" + lt_label_end + "\n"
+           "0;JMP\n"
+           "(" + lt_label_start + ")\n"
+           "@SP\n"
+           "A=M-1\n"
+           "M=-1\n"  // x < y, so set result to TRUE
+           "(" + lt_label_end + ")\n";
 }
 
 /** Generate Hack Assembly code for a VM and operation */
-string VMTranslator::vm_and(){
-    return "";
+string VMTranslator::vm_and() {
+    return "@SP\n"    // Pop y (y is on top)
+           "AM=M-1\n"
+           "D=M\n"
+           "A=A-1\n"
+           "M=M&D\n";  // x AND y
 }
 
 /** Generate Hack Assembly code for a VM or operation */
-string VMTranslator::vm_or(){
-    return "";
+string VMTranslator::vm_or() {
+    return "@SP\n"    // Pop y (y is on top)
+           "AM=M-1\n"
+           "D=M\n"
+           "A=A-1\n"
+           "M=M|D\n";  // x OR y
 }
 
 /** Generate Hack Assembly code for a VM not operation */
-string VMTranslator::vm_not(){
-    return "";
+string VMTranslator::vm_not() {
+    return "@SP\n"
+           "A=M-1\n"
+           "M=!M\n";  // NOT x
 }
 
 /** Generate Hack Assembly code for a VM label operation */
