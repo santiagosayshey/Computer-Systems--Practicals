@@ -25,13 +25,12 @@ string VMTranslator::vm_push(string segment, int offset) {
     string assembly_code;
 
     if (segment == "constant") {
-        assembly_code = "@" + to_string(offset) + "\n" +  // Load constant value
-                        "D=A\n" +
-                        "@SP\n" +
-                        "A=M\n" +  // Go to top of the stack
-                        "M=D\n" +  // Store constant value to top of the stack
-                        "@SP\n" +
-                        "M=M+1\n";  // Increment stack pointer
+        assembly_code = "@" + to_string(offset) + "\n"
+                        + "D=A\n"
+                        + "@SP\n"
+                        + "AM=M+1\n"
+                        + "A=A-1\n"
+                        + "M=D\n";
     } else {
         string base_address;
 
@@ -42,18 +41,16 @@ string VMTranslator::vm_push(string segment, int offset) {
         else if (segment == "pointer") base_address = "@3"; // Base address for pointer is 3
         else if (segment == "temp") base_address = "@5";   // Base address for temp is 5
 
-        assembly_code = base_address + "\n" +
-                        "D=M\n" +
-                        "@" + to_string(offset) + "\n" +
-                        "A=D+A\n" +  // Calculate effective address
-                        "D=M\n" +
-                        "@SP\n" +
-                        "A=M\n" +   // Go to top of the stack
-                        "M=D\n" +   // Store value to top of the stack
-                        "@SP\n" +
-                        "M=M+1\n"; // Increment stack pointer
+        assembly_code = base_address + "\n"
+                        + "D=M\n"
+                        + "@" + to_string(offset) + "\n"
+                        + "A=D+A\n"       // Calculate effective address
+                        + "D=M\n"
+                        + "@SP\n"
+                        + "AM=M+1\n"      // Increment stack pointer and update A register
+                        + "A=A-1\n"
+                        + "M=D\n";       // Store value at the top of the stack
     }
-
     return assembly_code;
 }
 
