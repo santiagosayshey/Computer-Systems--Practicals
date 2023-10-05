@@ -3,8 +3,7 @@
 
 using namespace std;
 
-// Declare static members
-string VMTranslator::functionName = ""; // or provide a default function name if desired
+string VMTranslator::functionName = "";
 int VMTranslator::labelCounter = 0;
 
 /**
@@ -23,54 +22,72 @@ VMTranslator::~VMTranslator() {
 
 /** Generate Hack Assembly code for a VM push operation */
 string VMTranslator::vm_push(string segment, int offset) {
-    string result = "";
-    string indexStr = std::to_string(offset);
+    string assembly_code;
 
     if (segment == "constant") {
-        result += "@" + indexStr + "\nD=A\n";
-    } else if (segment == "local" || segment == "argument" || segment == "this" || segment == "that") {
-        string baseAddress = (segment == "local") ? "LCL" :
-                             (segment == "argument") ? "ARG" :
-                             (segment == "this") ? "THIS" : "THAT";
-        result += "@" + baseAddress + "\nD=M\n@" + indexStr + "\nA=D+A\nD=M\n";
-    } else if (segment == "static") {
-        result += "@" + functionName + "." + indexStr + "\nD=M\n";
-    } else if (segment == "pointer") {
-        result += "@R" + std::to_string(3 + offset) + "\nD=M\n";
-    } else if (segment == "temp") {
-        result += "@R" + std::to_string(5 + offset) + "\nD=M\n";
+        assembly_code = "@" + to_string(offset) + "\n" +  // Load constant value
+                        "D=A\n" +
+                        "@SP\n" +
+                        "A=M\n" +  // Go to top of the stack
+                        "M=D\n" +  // Store constant value to top of the stack
+                        "@SP\n" +
+                        "M=M+1\n";  // Increment stack pointer
     } else {
-        return "// Invalid segment for push\n";
+        string base_address;
+
+        if (segment == "local") base_address = "@LCL";
+        else if (segment == "argument") base_address = "@ARG";
+        else if (segment == "this") base_address = "@THIS";
+        else if (segment == "that") base_address = "@THAT";
+        else if (segment == "pointer") base_address = "@3"; // Base address for pointer is 3
+        else if (segment == "temp") base_address = "@5";   // Base address for temp is 5
+
+        assembly_code = base_address + "\n" +
+                        "D=M\n" +
+                        "@" + to_string(offset) + "\n" +
+                        "A=D+A\n" +  // Calculate effective address
+                        "D=M\n" +
+                        "@SP\n" +
+                        "A=M\n" +   // Go to top of the stack
+                        "M=D\n" +   // Store value to top of the stack
+                        "@SP\n" +
+                        "M=M+1\n"; // Increment stack pointer
     }
 
-    // Common steps for all segments in push
-    result += "@SP\nA=M\nM=D\n@SP\nM=M+1\n";
-    
-    return result;
+    return assembly_code;
 }
 
 /** Generate Hack Assembly code for a VM pop operation */
 string VMTranslator::vm_pop(string segment, int offset) {
-    string result = "";
-    string indexStr = std::to_string(offset);
+    string assembly_code;
+    string base_address;
 
-    if (segment == "local" || segment == "argument" || segment == "this" || segment == "that") {
-        string baseAddress = (segment == "local") ? "LCL" :
-                             (segment == "argument") ? "ARG" :
-                             (segment == "this") ? "THIS" : "THAT";
-        result += "@" + baseAddress + "\nD=M\n@" + indexStr + "\nD=D+A\n@R13\nM=D\n";  // Address stored in R13
-        result += "@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n";  // Pop and store in address
-    } else if (segment == "static") {
-        result += "@SP\nAM=M-1\nD=M\n@" + functionName + "." + indexStr + "\nM=D\n";
-    } else if (segment == "pointer") {
-        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(3 + offset) + "\nM=D\n";
-    } else if (segment == "temp") {
-        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(5 + offset) + "\nM=D\n";
-    } else {
-        return "// Invalid segment for pop\n";
+    if (segment == "static") {
+        assembly_code = string("@SP\n") +
+                        "AM=M-1\n" +
+                        "D=M\n" +   // Get value from top of the stack
+                        "@" + functionName + "." + to_string(offset) + "\n" +
+                        "M=D\n";   // Store value to static variable address
+        return assembly_code; // Return from here, since the rest doesn't apply for static
     }
 
-    return result;
+    if (segment == "local") base_address = "@LCL";
+    else if (segment == "argument") base_address = "@ARG";
+    else if (segment == "this") base_address = "@THIS";
+    else if (segment == "that") base_address = "@THAT";
+    else if (segment == "pointer") base_address = "@3";  // Base address for pointer is 3
+    else if (segment == "temp") base_address = "@5";    // Base address for temp is 5
+
+    assembly_code = string("@SP\n") +
+                    "AM=M-1\n" +  // Decrement stack pointer and go to top of the stack
+                    "D=M\n" +     // Get value from top of the stack
+                    base_address + "\n" +
+                    "A=M\n" +
+                    "@" + to_string(offset) + "\n" +
+                    "A=D+A\n" +   // Calculate effective address
+                    "M=D\n";     // Store value to effective address
+
+    return assembly_code;
 }
 
 
