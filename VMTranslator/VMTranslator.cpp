@@ -3,7 +3,8 @@
 
 using namespace std;
 
-string VMTranslator::functionName = "";
+// Declare static members
+string VMTranslator::functionName = ""; // or provide a default function name if desired
 int VMTranslator::labelCounter = 0;
 
 /**
@@ -22,101 +23,43 @@ VMTranslator::~VMTranslator() {
 
 /** Generate Hack Assembly code for a VM push operation */
 string VMTranslator::vm_push(string segment, int offset) {
-    string assembly_code;
-    string indexStr = to_string(offset);
+    string result = "";
+    string index = to_string(offset);
 
     if (segment == "constant") {
-        assembly_code = "@" + indexStr + "\n"
-                        + "D=A\n"
-                        + "@SP\n"
-                        + "A=M\n"
-                        + "M=D\n"
-                        + "@SP\n"
-                        + "M=M+1\n";
-    } else {
-        string registerStr;
-
-        if (segment == "local") registerStr = "@LCL";
-        else if (segment == "argument") registerStr = "@ARG";
-        else if (segment == "this") registerStr = "@THIS";
-        else if (segment == "that") registerStr = "@THAT";
-        else if (segment == "pointer") registerStr = "@3"; // Base address for pointer is 3
-        else if (segment == "temp") registerStr = "@5";    // Base address for temp is 5
-        else if (segment == "static") registerStr = "@" + indexStr;
-
-        if (segment == "static" || segment == "pointer" || segment == "temp") {
-            assembly_code = "@" + registerStr + "\n"
-                            + "D=A\n"
-                            + "@" + indexStr + "\n"
-                            + "A=D+A\n"
-                            + "D=M\n"
-                            + "@SP\n"
-                            + "A=M\n"
-                            + "M=D\n"
-                            + "@SP\n"
-                            + "M=M+1\n";
-        } else {
-            assembly_code = "@" + registerStr + "\n"
-                            + "D=M\n"
-                            + "@" + indexStr + "\n"
-                            + "A=D+A\n"
-                            + "D=M\n"
-                            + "@SP\n"
-                            + "A=M\n"
-                            + "M=D\n"
-                            + "@SP\n"
-                            + "M=M+1\n";
-        }
+        result = "@" + index + "\n"
+                + "D=A\n"
+                + "@SP\n"
+                + "AM=M+1\n"
+                + "A=A-1\n"
+                + "M=D";
     }
-    return assembly_code;
+
+    return result;
 }
 
 /** Generate Hack Assembly code for a VM pop operation */
 string VMTranslator::vm_pop(string segment, int offset) {
-    string assembly_code;
-    string indexStr = to_string(offset);
+    string result = "";
+    string indexStr = std::to_string(offset);
 
-    if (segment == "constant") {
+    if (segment == "local" || segment == "argument" || segment == "this" || segment == "that") {
+        string baseAddress = (segment == "local") ? "LCL" :
+                             (segment == "argument") ? "ARG" :
+                             (segment == "this") ? "THIS" : "THAT";
+        result += "@" + baseAddress + "\nD=M\n@" + indexStr + "\nD=D+A\n@R13\nM=D\n";  // Address stored in R13
+        result += "@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n";  // Pop and store in address
+    } else if (segment == "static") {
+        result += "@SP\nAM=M-1\nD=M\n@" + functionName + "." + indexStr + "\nM=D\n";
+    } else if (segment == "pointer") {
+        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(3 + offset) + "\nM=D\n";
+    } else if (segment == "temp") {
+        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(5 + offset) + "\nM=D\n";
     } else {
-        string registerStr;
-
-        if (segment == "local") registerStr = "@LCL";
-        else if (segment == "argument") registerStr = "@ARG";
-        else if (segment == "this") registerStr = "@THIS";
-        else if (segment == "that") registerStr = "@THAT";
-        else if (segment == "pointer") registerStr = "@3"; // Base address for pointer is 3
-        else if (segment == "temp") registerStr = "@5";    // Base address for temp is 5
-        else if (segment == "static") registerStr = "@" + indexStr;
-
-        if (segment == "static") {
-            assembly_code = "@" + registerStr + "\n"
-                            + "D=A\n"
-                            + "@" + indexStr + "\n"
-                            + "D=D+A\n"
-                            + "@R13\n"
-                            + "M=D\n"
-                            + "@SP\n"
-                            + "AM=M-1\n"
-                            + "D=M\n"
-                            + "@R13\n"
-                            + "A=M\n"
-                            + "M=D\n";
-        } else {
-            assembly_code = "@" + registerStr + "\n"
-                            + "D=M\n"
-                            + "@" + indexStr + "\n"
-                            + "D=D+A\n"
-                            + "@R13\n"
-                            + "M=D\n"
-                            + "@SP\n"
-                            + "AM=M-1\n"
-                            + "D=M\n"
-                            + "@R13\n"
-                            + "A=M\n"
-                            + "M=D\n";
-        }
+        return "// Invalid segment for pop\n";
     }
-    return assembly_code;
+
+    return result;
 }
 
 
@@ -132,20 +75,12 @@ string VMTranslator::vm_add(){
 
 /** Generate Hack Assembly code for a VM sub operation */
 string VMTranslator::vm_sub(){
-    return 
-    "@SP\n"
-    "AM=M-1\n"  // Decrement stack pointer and go to top of the stack
-    "D=M\n"     // Pop the top value into D
-    "A=A-1\n"   // Move to the second value on the stack
-    "M=M-D\n";  // Subtract D from the value currently at the top of the stack
+    return "";
 }
 
 /** Generate Hack Assembly code for a VM neg operation */
 string VMTranslator::vm_neg(){
-    return 
-    "@SP\n"
-    "A=M-1\n"  // Go to the top value on the stack
-    "M=-M\n";  // Negate it
+    return "";
 }
 
 /** Generate Hack Assembly code for a VM eq operation */
