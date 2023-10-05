@@ -29,7 +29,7 @@ string VMTranslator::vm_push(string segment, int offset)
 
     if(segment == "constant")
     {
-        assemblyCode += "@" + indexStr + " // push " + segment + " " + indexStr + "\n";
+        assemblyCode += "@" + indexStr + "\n";
         assemblyCode += "D=A\n";
         assemblyCode += "@SP\n";
         assemblyCode += "A=M\n";
@@ -39,7 +39,7 @@ string VMTranslator::vm_push(string segment, int offset)
     } 
     else if(segment == "static" || segment == "temp" || segment == "pointer")
     {
-        assemblyCode += "@" + registerStr + " // push " + segment + " " + indexStr + "\n";
+        assemblyCode += "@" + registerStr + "\n";
         assemblyCode += "D=A\n";
         assemblyCode += "@" + indexStr + "\n";
         assemblyCode += "A=D+A\n";
@@ -52,7 +52,7 @@ string VMTranslator::vm_push(string segment, int offset)
     } 
     else if(segment == "argument" || segment == "local" || segment == "this" || segment == "that")
     {
-        assemblyCode += "@" + registerStr + " // push " + segment + " " + indexStr + "\n";
+        assemblyCode += "@" + registerStr + "\n";
         assemblyCode += "D=M\n";
         assemblyCode += "@" + indexStr + "\n";
         assemblyCode += "A=D+A\n";
@@ -85,7 +85,7 @@ string VMTranslator::vm_pop(string segment, int offset)
     } 
     else if(segment == "static")
     {
-        assemblyCode += "@" + registerStr + " // pop " + segment + " " + indexStr + "\n";
+        assemblyCode += "@" + registerStr + "\n";
         assemblyCode += "D=A\n";
         assemblyCode += "@" + indexStr + "\n";
         assemblyCode += "D=D+A\n";
@@ -100,7 +100,7 @@ string VMTranslator::vm_pop(string segment, int offset)
     } 
     else if(segment == "argument" || segment == "local" || segment == "this" || segment == "that" || segment == "temp" || segment == "pointer")
     {
-        assemblyCode += "@" + registerStr + " // pop " + segment + " " + indexStr + "\n";
+        assemblyCode += "@" + registerStr + "\n";
         assemblyCode += "D=M\n";
         assemblyCode += "@" + indexStr + "\n";
         assemblyCode += "D=D+A\n";
