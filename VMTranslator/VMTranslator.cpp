@@ -22,76 +22,14 @@ VMTranslator::~VMTranslator() {
 }
 
 /** Generate Hack Assembly code for a VM push operation */
-string ASMWritter::vm_push(string segment, int offset)
+string VMTranslator::vm_pop(string segment, int offset)
 {
-    ss_ASM.str(string());
-    string indexStr = to_string(offset); // convert the offset (int) into string to be write to the command
-    string registerStr = registerName(segment, offset);
-    switch (map_segments[segment])
-    {
-    case seg_constant:
-        write("@" + indexStr + " // push " + segment + " " + indexStr);
-        write("D=A");
-        write("@SP");
-        write("A=M");
-        write("M=D");
-        write("@SP");
-        write("M=M+1");
-        break;
-    case seg_static:
-    case seg_temp:
-    case seg_pointer:
-        write("@" + registerStr + " // push " + segment + " " + indexStr);
-        write("D=A");
-        write("@" + indexStr);
-        write("A=D+A");
-        write("D=M");
-        write("@SP");
-        write("A=M");
-        write("M=D");
-        write("@SP");
-        write("M=M+1");
-        break;
-    case seg_argument:
-    case seg_local:
-    case seg_this:
-    case seg_that:
-        write("@" + registerStr + " // push " + segment + " " + indexStr);
-        write("D=M");
-        write("@" + indexStr);
-        write("A=D+A");
-        write("D=M");
-        write("@SP");
-        write("A=M");
-        write("M=D");
-        write("@SP");
-        write("M=M+1");
-        break;
-    default:
-        throw runtime_error("vm_push(): Invalid segment");
-    }
-    return ss_ASM.str() + "\n";
+    return "";
 }
 
 /** Generate Hack Assembly code for a VM pop operation */
-string VMTranslator::vm_pop(string segment, int offset) {
-    string result = "";
-    string indexStr = std::to_string(offset);
-
-    if (segment == "local" || segment == "argument" || segment == "this" || segment == "that") {
-        string baseAddress = segmentMap[segment];  // using the same assumed map as above
-        result += "@" + baseAddress + "\nD=M\n@" + indexStr + "\nD=D+A\n@R13\nM=D\n";
-        result += "@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n";
-    } else if (segment == "static") {
-        result += "@SP\nAM=M-1\nD=M\n@" + fileName + "." + indexStr + "\nM=D\n";
-    } else if (segment == "pointer" || segment == "temp") {
-        int baseAddress = (segment == "pointer") ? 3 : 5;
-        result += "@SP\nAM=M-1\nD=M\n@R" + std::to_string(baseAddress + offset) + "\nM=D\n";
-    } else {
-        return "// Invalid segment for pop\n";
-    }
-
-    return result;
+string VMTranslator::vm_push(string segment, int offset) {
+    return "";
 }
 
 /** Generate Hack Assembly code for a VM add operation */
