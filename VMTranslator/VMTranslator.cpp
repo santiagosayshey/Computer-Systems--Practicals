@@ -1,405 +1,355 @@
 #include <string>
+#include <sstream>
+#include <stdexcept>
+#include <regex>
+#include <cstdint>
+
 #include "VMTranslator.h"
 
 using namespace std;
 
-// Declare static members
-string VMTranslator::functionName = "Filename"; // or provide a default function name if desired
-int VMTranslator::labelCounter = 0;
+static stringstream streamASM;
 
-/**
- * VMTranslator constructor
- */
+void writeToScreen(string asmCode){
+    if(asmCode.find("(") == string::npos)
+    {
+        streamASM << "\t";
+    }
+    streamASM << asmCode << endl;
+}
+
+string nameReg(string segment, int offset){
+    if (segment == "this")
+    {
+        return "THIS";
+    }
+    else if (segment == "that")
+    {
+        return "THAT";
+    }
+    else if (segment == "pointer")
+    {
+        return "R" + to_string(3 + offset);
+    }
+    else if (segment == "argument")
+    {
+        return "ARG";
+    }
+    else if (segment == "local")
+    {
+        return "LCL";
+    }
+    else if (segment == "temp")
+    {
+        return "R" + to_string(5 + offset);
+    }
+    else if (segment == "static")
+    {
+        return "16";
+    }
+    return "Error";
+}
+
 VMTranslator::VMTranslator() {
     // Your code here
 }
 
-/**
- * VMTranslator destructor
- */
+
 VMTranslator::~VMTranslator() {
     // Your code here
 }
 
-/** Generate Hack Assembly code for a VM push operation */
-string VMTranslator::vm_push(string segment, int offset) {
-    string result = "";
+/** Generate Hack Assembly code for a VM push operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_push(string segment, int offset){;
+
+    streamASM.str(string());
     string index = to_string(offset);
+    string seg = nameReg(segment, offset);
 
-    if (segment == "constant") {
-        result = result + "@" + index + "\n"
-                + "D=A\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "local") {
-        result = result + "@LCL\n"
-                + "D=M\n"
-                + "@" + index + "\n"
-                + "A=D+A\n"
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "argument") {
-        result = result + "@ARG\n"
-                + "D=M\n"
-                + "@" + index + "\n"
-                + "A=D+A\n"
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "this") {
-        result = result + "@THIS\n"
-                + "D=M\n"
-                + "@" + index + "\n"
-                + "A=D+A\n"
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "that") {
-        result = result + "@THAT\n"
-                + "D=M\n"
-                + "@" + index + "\n"
-                + "A=D+A\n"
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "static") {
-        result = result + "@" + functionName + "." + index + "\n" // Assuming functionName is a class member
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "pointer") {
-        result = result + "@R" + to_string(3 + offset) + "\n" // 3 + 0 or 3 + 1
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else if (segment == "temp") {
-        result = result + "@R" + to_string(5 + offset) + "\n" // Temp starts at RAM[5]
-                + "D=M\n"
-                + "@SP\n"
-                + "AM=M+1\n"
-                + "A=A-1\n"
-                + "M=D";
-    } else {
-        return "// Invalid segment for push";
+    if (segment == "constant")
+    {
+        writeToScreen("@"+index+" // Push " + segment + " " + index);
+        writeToScreen("D=A");
+        writeToScreen("@SP");
+        writeToScreen("A=M");
+        writeToScreen("M=D");
+        writeToScreen("@SP");
+        writeToScreen("M=M+1");
+    }
+    else if (seg == "Error")
+    {
+        throw runtime_error("VM Push(): invalid Segment");
+    }
+    else if (segment == "static")
+    {
+        writeToScreen("@" + seg +" // Push " + segment + " " + index);
+        writeToScreen("D=A");
+        writeToScreen("@" + index);
+        writeToScreen("A=D+A");
+        writeToScreen("D=M");
+        writeToScreen("@SP");
+        writeToScreen("A=M");
+        writeToScreen("M=D");
+        writeToScreen("@SP");
+        writeToScreen("M=M+1");
+    }
+    else if (segment == "pointer" || segment == "temp")
+    {
+        writeToScreen("@" + seg +" // Push " + segment + " " + index);
+        writeToScreen("D=M");
+        writeToScreen("@SP");
+        writeToScreen("A=M");
+        writeToScreen("M=D");
+        writeToScreen("@SP");
+        writeToScreen("M=M+1");
+    }
+    else
+    {
+        writeToScreen("@" + seg +" // Push " + segment + " " + index);
+        writeToScreen("D=M");
+        writeToScreen("@" + index);
+        writeToScreen("A=D+A");
+        writeToScreen("D=M");
+        writeToScreen("@SP");
+        writeToScreen("A=M");
+        writeToScreen("M=D");
+        writeToScreen("@SP");
+        writeToScreen("M=M+1");
     }
 
-    return result;
+    return streamASM.str() + "\n";
 }
 
-/** Generate Hack Assembly code for a VM pop operation */
-string VMTranslator::vm_pop(string segment, int offset) {
-    string result = "";
-    string indexStr = std::to_string(offset);
-
-    if (segment == "local") {
-        result = result + "@LCL\n"
-                + "D=M\n"
-                + "@" + indexStr + "\n"
-                + "D=D+A\n"
-                + "@R13\n"
-                + "M=D\n"  // Store address to R13
-                + "@SP\n"
-                + "AM=M-1\n"
-                + "D=M\n"
-                + "@R13\n"
-                + "A=M\n"
-                + "M=D\n";  // Pop value to address
-    } else if (segment == "argument") {
-        result = result + "@ARG\n"
-                + "D=M\n"
-                + "@" + indexStr + "\n"
-                + "D=D+A\n"
-                + "@R13\n"
-                + "M=D\n"  // Store address to R13
-                + "@SP\n"
-                + "AM=M-1\n"
-                + "D=M\n"
-                + "@R13\n"
-                + "A=M\n"
-                + "M=D\n";  // Pop value to address
-    } else if (segment == "this") {
-        result = result + "@THIS\n"
-                + "D=M\n"
-                + "@" + indexStr + "\n"
-                + "D=D+A\n"
-                + "@R13\n"
-                + "M=D\n"  // Store address to R13
-                + "@SP\n"
-                + "AM=M-1\n"
-                + "D=M\n"
-                + "@R13\n"
-                + "A=M\n"
-                + "M=D\n";  // Pop value to address
-    } else if (segment == "that") {
-        result = result + "@THAT\n"
-                + "D=M\n"
-                + "@" + indexStr + "\n"
-                + "D=D+A\n"
-                + "@R13\n"
-                + "M=D\n"  // Store address to R13
-                + "@SP\n"
-                + "AM=M-1\n"
-                + "D=M\n"
-                + "@R13\n"
-                + "A=M\n"
-                + "M=D\n";  // Pop value to address
-    } else if (segment == "static") {
-        result = result + "@SP\n"
-                + "AM=M-1\n"
-                + "D=M\n"
-                + "@" + functionName + "." + indexStr + "\n"
-                + "M=D\n";  // Pop value to static variable
-    } else if (segment == "pointer") {
-        result = result + "@SP\n"
-                + "AM=M-1\n"
-                + "D=M\n"
-                + "@R" + std::to_string(3 + offset) + "\n"
-                + "M=D\n";  // Pop value to pointer
-    } else if (segment == "temp") {
-        result = result + "@SP\n"
-                + "AM=M-1\n"
-                + "D=M\n"
-                + "@R" + std::to_string(5 + offset) + "\n"
-                + "M=D\n";  // Pop value to temp location
-    } else {
-        return "// Invalid segment for pop";
-    }
-
-    return result;
-}
-
-
-/** Generate Hack Assembly code for a VM add operation */
-string VMTranslator::vm_add(){
-    return 
-    "@SP\n"         // Get stack pointer address
-    "AM=M-1\n"      // Decrement the stack pointer and go to y (the topmost value)
-    "D=M\n"         // Store y in D
-    "A=A-1\n"       // Go to x (the second topmost value)
-    "M=D+M\n";      // Add x and y, then store result at x's location (top of stack now)
-}
-
-/** Generate Hack Assembly code for a VM sub operation */
-string VMTranslator::vm_sub(){
-    return "";
-}
-
-/** Generate Hack Assembly code for a VM neg operation */
-string VMTranslator::vm_neg(){
-    return "";
-}
-
-/** Generate Hack Assembly code for a VM eq operation */
-string VMTranslator::vm_eq(){
-    string label1 = "EQUAL_" + to_string(labelCounter);
-    string label2 = "END_EQUAL_" + to_string(labelCounter);
-    labelCounter++;
-
-    return 
-    "@SP\n"
-    "AM=M-1\n"
-    "D=M\n"
-    "A=A-1\n"
-    "D=M-D\n"       // D now has y - x
-    "@" + label1 + "\n"
-    "D;JEQ\n"      // If y - x is 0 (i.e., y=x), jump to label EQUAL
-    "@SP\n"
-    "A=M-1\n"
-    "M=0\n"        // Push 0 (false)
-    "@" + label2 + "\n"
-    "0;JMP\n"
-    "(" + label1 + ")\n"
-    "@SP\n"
-    "A=M-1\n"
-    "M=-1\n"       // Push -1 (true)
-    "(" + label2 + ")\n";
-}
-
-
-/** Generate Hack Assembly code for a VM gt operation */
-string VMTranslator::vm_gt(){
-    string label1 = "GREATER_" + to_string(labelCounter);
-    string label2 = "END_GREATER_" + to_string(labelCounter);
-    labelCounter++;
-
-    return
-    "@SP\n"
-    "AM=M-1\n"
-    "D=M\n"
-    "A=A-1\n"
-    "D=M-D\n"        // D now has y - x
-    "@" + label1 + "\n"
-    "D;JGT\n"        // If y - x is greater than 0 (i.e., y>x), jump to label GREATER
-    "@SP\n"
-    "A=M-1\n"
-    "M=0\n"          // Push 0 (false)
-    "@" + label2 + "\n"
-    "0;JMP\n"
-    "(" + label1 + ")\n"
-    "@SP\n"
-    "A=M-1\n"
-    "M=-1\n"         // Push -1 (true)
-    "(" + label2 + ")\n";
-}
-
-/** Generate Hack Assembly code for a VM lt operation */
-string VMTranslator::vm_lt() {
-    static int lt_counter = 0;  // A counter to generate unique labels for each lt operation.
-    string lt_label_start = "LT_TRUE_" + std::to_string(lt_counter);
-    string lt_label_end = "LT_END_" + std::to_string(lt_counter);
-    lt_counter++;
+/** Generate Hack Assembly code for a VM pop operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_pop(string segment, int offset){
     
-    return "@SP\n"    // Pop y (y is on top)
-           "AM=M-1\n"
-           "D=M\n"
-           "A=A-1\n" // Pop x (x is the second from the top)
-           "D=M-D\n" // D = x - y
-           "@" + lt_label_start + "\n"
-           "D;JLT\n" // Jump if x < y
-           "@SP\n"
-           "A=M-1\n"
-           "M=0\n"   // x >= y, so set result to FALSE
-           "@" + lt_label_end + "\n"
-           "0;JMP\n"
-           "(" + lt_label_start + ")\n"
-           "@SP\n"
-           "A=M-1\n"
-           "M=-1\n"  // x < y, so set result to TRUE
-           "(" + lt_label_end + ")\n";
+    streamASM.str(string());
+    string index = to_string(offset);
+    string seg = nameReg(segment, offset);
+    
+    if ( segment == "constant")
+    {
+        throw runtime_error("VM pop(): can't pop constant");
+    }
+    else if ( seg == "Error")
+    {
+        throw runtime_error("VM pop(): invalid Segment");
+    }
+    else if (segment == "static")
+    {
+        writeToScreen("@" + seg + " // Pop " + segment + index);
+        writeToScreen("D=A");
+        writeToScreen("@" + index);
+        writeToScreen("D=D+A");
+        writeToScreen("@R13");
+        writeToScreen("M=D");
+        writeToScreen("@SP");
+        writeToScreen("AM=M-1");
+        writeToScreen("D=M");
+        writeToScreen("@R13");
+        writeToScreen("A=M");
+        writeToScreen("M=D");
+    }
+    else if (segment == "pointer" || segment == "temp")
+    {
+        writeToScreen("@SP");
+        writeToScreen("AM=M-1");
+        writeToScreen("D=M");
+        writeToScreen("@" + seg);
+        writeToScreen("M=D");
+    }
+    else
+    {
+        writeToScreen("@" + seg + " // Pop " + segment + index);
+        writeToScreen("D=M");
+        writeToScreen("@" + index);
+        writeToScreen("D=D+A");
+        writeToScreen("@R13");
+        writeToScreen("M=D");
+        writeToScreen("@SP");
+        writeToScreen("AM=M-1");
+        writeToScreen("D=M");
+        writeToScreen("@R13");
+        writeToScreen("A=M");
+        writeToScreen("M=D");
+    }
+
+    return streamASM.str() + "\n";
 }
 
-/** Generate Hack Assembly code for a VM and operation */
-string VMTranslator::vm_and() {
-    return "@SP\n"    // Pop y (y is on top)
-           "AM=M-1\n"
-           "D=M\n"
-           "A=A-1\n"
-           "M=M&D\n";  // x AND y
+/** Generate Hack Assembly code for a VM add operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_add(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M");
+    writeToScreen("A=A-1");
+    writeToScreen("M=M+D");
+    return streamASM.str() + "\n";
 }
 
-/** Generate Hack Assembly code for a VM or operation */
-string VMTranslator::vm_or() {
-    return "@SP\n"    // Pop y (y is on top)
-           "AM=M-1\n"
-           "D=M\n"
-           "A=A-1\n"
-           "M=M|D\n";  // x OR y
+/** Generate Hack Assembly code for a VM sub operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_sub(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M");
+    writeToScreen("A=A-1");
+    writeToScreen("M=M-D");
+    return streamASM.str() + "\n";
 }
 
-/** Generate Hack Assembly code for a VM not operation */
-string VMTranslator::vm_not() {
-    return "@SP\n"
-           "A=M-1\n"
-           "M=!M\n";  // NOT x
+/** Generate Hack Assembly code for a VM neg operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_neg(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("A=M");
+    writeToScreen("A=A-1");
+    writeToScreen("M=-M");
+    return streamASM.str() + "\n";
 }
 
-/** Generate Hack Assembly code for a VM label operation */
+/** Generate Hack Assembly code for a VM eq operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_eq(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M");
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M-D");
+    writeToScreen("@ifEQTrue");
+    writeToScreen("D;JEQ");
+    writeToScreen("D=0");
+    writeToScreen("@ifEQFalse");
+    writeToScreen("0;JMP");
+    writeToScreen("(ifEQTrue)");
+    writeToScreen("D=-1");
+    writeToScreen("(ifEQFalse)");
+    writeToScreen("@SP");
+    writeToScreen("A=M");
+    writeToScreen("M=D");
+    writeToScreen("@SP");
+    writeToScreen("M=M+1");
+    return streamASM.str() + "\n";
+}
+
+/** Generate Hack Assembly code for a VM gt operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_gt(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M");
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M-D");
+    writeToScreen("@ifGTTrue");
+    writeToScreen("D;JGT");
+    writeToScreen("D=0");
+    writeToScreen("@ifGTFalse");
+    writeToScreen("0;JMP");
+    writeToScreen("(ifGTTrue)");
+    writeToScreen("D=-1");
+    writeToScreen("(ifGTFalse)");
+    writeToScreen("@SP");
+    writeToScreen("A=M");
+    writeToScreen("M=D");
+    writeToScreen("@SP");
+    writeToScreen("M=M+1");
+    return streamASM.str() + "\n";
+}
+
+/** Generate Hack Assembly code for a VM lt operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_lt(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M");
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M-D");
+    writeToScreen("@ifLTTrue");
+    writeToScreen("D;JLT");
+    writeToScreen("D=0");
+    writeToScreen("@ifLTFalse");
+    writeToScreen("0;JMP");
+    writeToScreen("(ifLTTrue)");
+    writeToScreen("D=-1");
+    writeToScreen("(ifLTFalse)");
+    writeToScreen("@SP");
+    writeToScreen("A=M");
+    writeToScreen("M=D");
+    writeToScreen("@SP");
+    writeToScreen("M=M+1");
+    return streamASM.str() + "\n";
+}
+
+/** Generate Hack Assembly code for a VM and operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_and(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M");
+    writeToScreen("A=A-1");
+    writeToScreen("M=D&M");
+    return streamASM.str() + "\n";
+}
+
+/** Generate Hack Assembly code for a VM or operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_or(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("AM=M-1");
+    writeToScreen("D=M");
+    writeToScreen("A=A-1");
+    writeToScreen("M=D|M");
+    return streamASM.str() + "\n";
+}
+
+/** Generate Hack Assembly code for a VM not operation assessed in Practical Assignment 6 */
+string VMTranslator::vm_not(){
+    streamASM.str(string());
+    writeToScreen("@SP");
+    writeToScreen("A=M");
+    writeToScreen("A=A-1");
+    writeToScreen("M=!M");
+    return streamASM.str() + "\n";
+}
+
+/** Generate Hack Assembly code for a VM label operation assessed in Practical Assignment 7 */
 string VMTranslator::vm_label(string label){
-    return "(" + label + ")\n";
+    return "";
 }
 
-/** Generate Hack Assembly code for a VM goto operation */
+/** Generate Hack Assembly code for a VM goto operation assessed in Practical Assignment 7 */
 string VMTranslator::vm_goto(string label){
-    return "@" + label + "\n0;JMP\n";
+    return "";
 }
 
-/** Generate Hack Assembly code for a VM if-goto operation */
+/** Generate Hack Assembly code for a VM if-goto operation assessed in Practical Assignment 7 */
 string VMTranslator::vm_if(string label){
-    return 
-    "@SP\n"        // Point to the current stack pointer.
-    "AM=M-1\n"     // Decrement the stack pointer and go to the topmost value.
-    "D=M\n"        // Pop the topmost value to D.
-    "@" + label + "\n"
-    "D;JNE\n";     // Jump if D (the popped value) is not 0.
+    return "";
 }
 
-/** Generate Hack Assembly code for a VM function operation */
+/** Generate Hack Assembly code for a VM function operation assessed in Practical Assignment 7 */
 string VMTranslator::vm_function(string function_name, int n_vars){
-    string code = "(" + function_name + ")\n";  // Create the function label
-
-    // Initialize the local variables to 0 and push them to the stack
-    for(int i = 0; i < n_vars; i++) {
-        code += "@0\n"          // Load constant 0
-                "D=A\n"          // Store it in D
-                "@SP\n"          // Point to the current stack pointer
-                "A=M\n"          // Go to the top of the stack
-                "M=D\n"          // Push 0 to the stack
-                "@SP\n"          // Increment stack pointer
-                "M=M+1\n";
-    }
-
-    return code;
+    return "";
 }
 
-/** Generate Hack Assembly code for a VM call operation */
+/** Generate Hack Assembly code for a VM call operation assessed in Practical Assignment 7 */
 string VMTranslator::vm_call(string function_name, int n_args){
-    // Unique label for returning after the function is done
-    string returnLabel = "RETURN_" + function_name + "_" + to_string(labelCounter++);
-    string code = "";
-
-    // Push the return address
-    code += "@" + returnLabel + "\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
-
-    // Save LCL, ARG, THIS, and THAT
-    string segments[] = {"LCL", "ARG", "THIS", "THAT"};
-    for (string segment : segments) {
-        code += "@" + segment + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
-    }
-
-    // ARG = SP - n_args - 5
-    code += "@SP\nD=M\n@" + to_string(n_args + 5) + "\nD=D-A\n@ARG\nM=D\n";
-
-    // LCL = SP
-    code += "@SP\nD=M\n@LCL\nM=D\n";
-
-    // Goto function
-    code += "@" + function_name + "\n0;JMP\n";
-
-    // Declare the return label
-    code += "(" + returnLabel + ")\n";
-
-    return code;
+    return "";
 }
 
-/** Generate Hack Assembly code for a VM return operation */
+/** Generate Hack Assembly code for a VM return operation assessed in Practical Assignment 7 */
 string VMTranslator::vm_return(){
-    string code = "";
-
-    // EndFrame = LCL (temporary variable)
-    code += "@LCL\nD=M\n@R13\nM=D\n";  // We'll use R13 as EndFrame
-
-    // RET = *(EndFrame-5)
-    code += "@5\nA=D-A\nD=M\n@R14\nM=D\n";  // We'll use R14 as RET
-
-    // *ARG = pop()
-    code += "@SP\nAM=M-1\nD=M\n@ARG\nA=M\nM=D\n";
-
-    // SP = ARG+1
-    code += "@ARG\nD=M+1\n@SP\nM=D\n";
-
-    // Restore THAT, THIS, ARG, LCL
-    string segments[] = {"THAT", "THIS", "ARG", "LCL"};
-    for (int i = 1; i <= 4; i++) {
-        code += "@R13\nD=M\n@" + to_string(i) + "\nA=D-A\nD=M\n@" + segments[i-1] + "\nM=D\n";
-    }
-
-    // Goto RET
-    code += "@R14\nA=M\n0;JMP\n";
-
-    return code;
+    return "";
 }
+
+// string VMTranslator::vm_end(){
+//     streamASM.str(string());
+//     writeToScreen("(END)");
+//     writeToScreen("@END");
+//     writeToScreen("0;JMP");
+//     return streamASM.str() + "\n";
+// }
