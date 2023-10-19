@@ -1,0 +1,4 @@
+// FunctionTest01.vm
+function FunctionTest01.function 0  // Declare a function with 0 local variables.
+push constant 10
+return
