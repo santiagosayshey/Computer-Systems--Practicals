@@ -1,0 +1,4 @@
+// ReturnTest01.vm
+function ReturnTest01.function 0
+push constant 800
+return
