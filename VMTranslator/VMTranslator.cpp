@@ -4,7 +4,7 @@
 using namespace std;
 
 // Declare static members
-string VMTranslator::functionName = ""; // or provide a default function name if desired
+string VMTranslator::functionName = "Filename"; // or provide a default function name if desired
 int VMTranslator::labelCounter = 0;
 
 /**
@@ -101,7 +101,6 @@ string VMTranslator::vm_push(string segment, int offset) {
     return result;
 }
 
-/** Generate Hack Assembly code for a VM pop operation */
 /** Generate Hack Assembly code for a VM pop operation */
 string VMTranslator::vm_pop(string segment, int offset) {
     string result = "";
