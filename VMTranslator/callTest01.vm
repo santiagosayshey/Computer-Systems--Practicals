@@ -1,4 +1,0 @@
-// Test calling a function with arguments (assuming someFunction takes 2 arguments)
-push constant 3
-push constant 4
-call someFunction 2

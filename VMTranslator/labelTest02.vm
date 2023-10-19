@@ -1,4 +1,3 @@
-// Test with multiple labels
-label FIRST
-goto SECOND
-label SECOND
+// LabelTest02.vm
+label START
+push constant 2

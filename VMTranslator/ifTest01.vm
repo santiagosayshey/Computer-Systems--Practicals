@@ -1,4 +1,0 @@
-// Test conditional jump when top of the stack is not 0
-push constant 1
-if-goto FIRST
-label FIRST

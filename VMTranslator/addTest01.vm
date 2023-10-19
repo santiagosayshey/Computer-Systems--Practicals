@@ -1,4 +1,4 @@
-// Test for adding two constants
-push constant 3
-push constant 4
+// AddTest01.vm
+push constant 10
+push constant 20
 add

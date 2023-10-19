@@ -1,3 +1,5 @@
-// Test for pushing a value from a segment (assuming a value already exists in this segment)
-push local 1
-push 
+// PushTest02.vm
+push local 0
+push argument 1
+push this 2
+push that 3

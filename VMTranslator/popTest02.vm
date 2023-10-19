@@ -1,3 +1,9 @@
-// Test for popping another value from the stack to a different segment (assuming segments and stack have values)
-push constant 7
-pop argument 1
+// PopTest02.vm
+push constant 31
+pop local 0
+push constant 32
+pop argument 0
+push constant 33
+pop this 0
+push constant 34
+pop that 0

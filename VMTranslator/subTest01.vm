@@ -1,4 +1,4 @@
-// Test for subtracting two constants
-push constant 9
-push constant 2
+// SubTest01.vm
+push constant 30
+push constant 10
 sub

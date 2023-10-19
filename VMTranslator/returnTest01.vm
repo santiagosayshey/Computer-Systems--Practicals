@@ -1,7 +1,0 @@
-// Test basic function return
-function SimpleReturn 2
-  push constant 5
-  push constant 6
-  return
-
-call SimpleReturn 0
