@@ -350,99 +350,62 @@ string VMTranslator::vm_if(string label){
     return streamASM.str();
 }
 
-/** Generate Hack Assembly code for a VM function operation assessed in Practical Assignment 7 */
+/** Generate Hack Assembly code for a VM function operation */
 string VMTranslator::vm_function(string function_name, int n_vars){
-    streamASM.str(string());
-    appendInstruction("(" + function_name + ")");
-    for (int i = 0; i < n_vars; i++) {
-        appendInstruction("@0");
-        appendInstruction("D=A");
-        appendInstruction("@SP");
-        appendInstruction("A=M");
-        appendInstruction("M=D");
-        appendInstruction("@SP");
-        appendInstruction("M=M+1");
+    string code = "(" + function_name + ")\n"; // Create the function label
+    // Initialize the local variables to 0 and push them to the stack
+    for(int i = 0; i < n_vars; i++) {
+        code += "@0\n" // Load constant 0
+                "D=A\n" // Store it in D
+                "@SP\n" // Point to the current stack pointer
+                "A=M\n" // Go to the top of the stack
+                "M=D\n" // Push 0 to the stack
+                "@SP\n" // Increment stack pointer
+                "M=M+1\n";
     }
-    return streamASM.str();
+    return code;
 }
 
-/** Generate Hack Assembly code for a VM call operation assessed in Practical Assignment 7 */
+/** Generate Hack Assembly code for a VM call operation */
 string VMTranslator::vm_call(string function_name, int n_args){
-    // This is a more complex function, as it involves several steps to manage the stack.
-    // A simplified version is provided here. Please adapt as needed for your VM implementation.
-    streamASM.str(string());
-    string returnLabel = "return_" + function_name + "_" + to_string(labelCounter++);
-
-    // Push return address
-    appendInstruction("@" + returnLabel);
-    appendInstruction("D=A");
-    appendInstruction("@SP");
-    appendInstruction("A=M");
-    appendInstruction("M=D");
-    appendInstruction("@SP");
-    appendInstruction("M=M+1");
-
-    // Push LCL, ARG, THIS, THAT
-    // (Skipping for brevity. It's similar to pushing the return address, but using M instead of A for the data transfer.)
-
-    // ARG = SP-n-5
-    appendInstruction("@SP");
-    appendInstruction("D=M");
-    appendInstruction("@" + to_string(n_args));
-    appendInstruction("D=D-A");
-    appendInstruction("@5");
-    appendInstruction("D=D-A");
-    appendInstruction("@ARG");
-    appendInstruction("M=D");
-
+    // Unique label for returning after the function is done
+    string returnLabel = "RETURN_" + function_name + "_" + to_string(labelCounter++);
+    string code = "";
+    // Push the return address
+    code += "@" + returnLabel + "\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+    // Save LCL, ARG, THIS, and THAT
+    string segments[] = {"LCL", "ARG", "THIS", "THAT"};
+    for (string segment : segments) {
+        code += "@" + segment + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n";
+    }
+    // ARG = SP - n_args - 5
+    code += "@SP\nD=M\n@" + to_string(n_args + 5) + "\nD=D-A\n@ARG\nM=D\n";
     // LCL = SP
-    appendInstruction("@SP");
-    appendInstruction("D=M");
-    appendInstruction("@LCL");
-    appendInstruction("M=D");
-
+    code += "@SP\nD=M\n@LCL\nM=D\n";
     // Goto function
-    appendInstruction("@" + function_name);
-    appendInstruction("0;JMP");
-
-    // Label for return address
-    appendInstruction("(" + returnLabel + ")");
-
-    return streamASM.str();
+    code += "@" + function_name + "\n0;JMP\n";
+    // Declare the return label
+    code += "(" + returnLabel + ")\n";
+    return code;
 }
 
-/** Generate Hack Assembly code for a VM return operation assessed in Practical Assignment 7 */
+/** Generate Hack Assembly code for a VM return operation */
 string VMTranslator::vm_return(){
-    streamASM.str(string());
-    // FRAME = LCL
-    appendInstruction("@LCL");
-    appendInstruction("D=M");
-    appendInstruction("@R13");
-    appendInstruction("M=D");
-
-    // RET = *(FRAME-5)
-    appendInstruction("@5");
-    appendInstruction("A=D-A");
-    appendInstruction("D=M");
-    appendInstruction("@R14");
-    appendInstruction("M=D");
-
+    string code = "";
+    // EndFrame = LCL (temporary variable)
+    code += "@LCL\nD=M\n@R13\nM=D\n"; // We'll use R13 as EndFrame
+    // RET = *(EndFrame-5)
+    code += "@5\nA=D-A\nD=M\n@R14\nM=D\n"; // We'll use R14 as RET
     // *ARG = pop()
-    // (Skipping the pop implementation for brevity, it's similar to your vm_pop function.)
-
+    code += "@SP\nAM=M-1\nD=M\n@ARG\nA=M\nM=D\n";
     // SP = ARG+1
-    appendInstruction("@ARG");
-    appendInstruction("D=M+1");
-    appendInstruction("@SP");
-    appendInstruction("M=D");
-
-    // THAT = *(FRAME-1), THIS = *(FRAME-2), ARG = *(FRAME-3), LCL = *(FRAME-4)
-    // (Skipping for brevity. It's a sequence of accessing memory locations relative to the FRAME and restoring values.)
-
+    code += "@ARG\nD=M+1\n@SP\nM=D\n";
+    // Restore THAT, THIS, ARG, LCL
+    string segments[] = {"THAT", "THIS", "ARG", "LCL"};
+    for (int i = 1; i <= 4; i++) {
+        code += "@R13\nD=M\n@" + to_string(i) + "\nA=D-A\nD=M\n@" + segments[i-1] + "\nM=D\n";
+    }
     // Goto RET
-    appendInstruction("@R14");
-    appendInstruction("A=M");
-    appendInstruction("0;JMP");
-
-    return streamASM.str();
+    code += "@R14\nA=M\n0;JMP\n";
+    return code;
 }
