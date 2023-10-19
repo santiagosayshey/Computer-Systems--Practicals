@@ -1,0 +1,9 @@
+// PushTest01.vm
+push constant 10
+push local 1
+push argument 2
+push this 3
+push that 4
+push temp 5
+push pointer 0
+push static 6

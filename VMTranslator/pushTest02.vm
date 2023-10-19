@@ -1,2 +1,3 @@
 // Test for pushing a value from a segment (assuming a value already exists in this segment)
 push local 1
+push 
