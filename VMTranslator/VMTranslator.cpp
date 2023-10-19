@@ -10,6 +10,9 @@ using namespace std;
 
 static stringstream streamASM;
 
+int VMTranslator::labelCounter = 0; // definition and initialization
+
+
 void appendInstruction(string asmCode){
     if(asmCode.find("(") == string::npos)
     {
@@ -235,8 +238,6 @@ string VMTranslator::vm_eq(){
 
     return streamASM.str();
 }
-
-/**
 
 /** Generate Hack Assembly code for a VM gt operation assessed in Practical Assignment 6 */
 string VMTranslator::vm_gt(){
