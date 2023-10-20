@@ -19,6 +19,7 @@ class CompilerParser {
         ParseTree* compileClassVarDec();
         ParseTree* compileSubroutine();
         ParseTree* compileParameterList();
+        ParseTree* compileSubroutineCall();
         ParseTree* compileSubroutineBody();
         ParseTree* compileVarDec();
 
@@ -30,6 +31,7 @@ class CompilerParser {
         ParseTree* compileReturn();
 
         ParseTree* compileExpression();
+
         ParseTree* compileTerm();
         ParseTree* compileExpressionList();
         
@@ -37,6 +39,7 @@ class CompilerParser {
         Token* current();
         bool have(std::string expectedType, std::string expectedValue);
         Token* mustBe(std::string expectedType, std::string expectedValue);
+        bool isOperator(const std::string& value);
 };
 
 class ParseException : public std::exception {
