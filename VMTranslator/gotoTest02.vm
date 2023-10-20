@@ -1,7 +1,0 @@
-// GotoTest02.vm
-label START
-push constant 1
-goto SKIP
-push constant 2 // This push command will be skipped
-label SKIP
-push constant 3

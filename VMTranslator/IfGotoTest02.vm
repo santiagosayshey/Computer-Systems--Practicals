@@ -1,8 +1,0 @@
-// IfGotoTest02.vm
-push constant 0
-if-goto TRUE
-goto END         
-label TRUE
-push constant 3      
-label END
-push constant 0

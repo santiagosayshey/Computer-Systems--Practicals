@@ -1,6 +1,0 @@
-// ReturnTest02.vm
-function ReturnTest02.function 1
-push constant 900
-pop local 0
-push local 0
-return

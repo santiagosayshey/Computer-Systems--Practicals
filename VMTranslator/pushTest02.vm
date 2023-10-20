@@ -1,5 +1,0 @@
-// PushTest02.vm
-push local 0
-push argument 1
-push this 2
-push that 3

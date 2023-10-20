@@ -1,3 +1,0 @@
-// NegTest01.vm
-push constant 25
-neg

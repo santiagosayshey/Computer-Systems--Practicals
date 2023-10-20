@@ -1,4 +1,0 @@
-// LtTest01.vm
-push constant 9
-push constant 14
-lt

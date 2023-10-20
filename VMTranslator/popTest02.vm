@@ -1,9 +1,0 @@
-// PopTest02.vm
-push constant 31
-pop local 0
-push constant 32
-pop argument 0
-push constant 33
-pop this 0
-push constant 34
-pop that 0

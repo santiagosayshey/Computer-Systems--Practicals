@@ -1,4 +1,0 @@
-// OrTest01.vm
-push constant 12
-push constant 10
-or

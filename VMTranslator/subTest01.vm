@@ -1,4 +1,0 @@
-// SubTest01.vm
-push constant 30
-push constant 10
-sub

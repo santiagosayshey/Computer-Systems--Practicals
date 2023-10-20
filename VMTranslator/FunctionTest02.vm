@@ -1,9 +1,0 @@
-// FunctionTest02.vm
-function FunctionTest02.function 2  // Declare a function with 2 local variables.
-push constant 5
-pop local 0
-push constant 6
-pop local 1
-push local 0
-add
-return

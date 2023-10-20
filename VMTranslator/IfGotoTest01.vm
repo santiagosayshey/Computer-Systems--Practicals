@@ -1,6 +1,0 @@
-// IfGotoTest01.vm
-push constant 0      // 'true' in Hack VM language.
-if-goto TRUE
-push constant 1      // This will NOT execute because the top of the stack is 'true' (0 in this case).
-label TRUE
-push constant 2      // Execution will jump here because of the 'if-goto TRUE'.
