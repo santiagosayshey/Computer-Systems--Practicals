@@ -1,6 +1,8 @@
 #include "CompilerParser.h"
 #include <stdexcept>
 #include <set>
+#include <exception>
+#include <string>
 
 /**
  * Constructor for the CompilerParser
@@ -28,10 +30,10 @@ ParseTree* CompilerParser::compileProgram() {
         }
     }
 
-    // Check if the program is empty (i.e., contains no classes) and handle it as an error
+    // Check if the program is empty (i.e., contains no classes)
     if (program->getChildren().empty()) {
-        // Error handling: Your language might expect at least one class per program
-        throw ParseException();
+        // Error handling: The language might expect at least one class per program
+        throw ParseException("Error: The program does not contain any classes.");
     }
     
     return program;
@@ -45,7 +47,7 @@ ParseTree* CompilerParser::compileProgram() {
 ParseTree* CompilerParser::compileClass() {
     // Ensure the current token is 'class'
     if (!have("keyword", "class")) {
-        throw ParseException();
+        throw ParseException("Error: Expected 'class' keyword at the start of class declaration.");
     }
 
     ParseTree* classTree = new ParseTree("class", "");
@@ -54,26 +56,28 @@ ParseTree* CompilerParser::compileClass() {
     classTree->addChild(new ParseTree("keyword", mustBe("keyword", "class")->getValue()));
 
     // Add class name to the tree
+    if (!have("identifier", "")) {
+        throw ParseException("Error: Expected class name identifier after 'class' keyword.");
+    }
     classTree->addChild(new ParseTree("identifier", mustBe("identifier", "")->getValue()));
 
-    // Add '{' symbol to the tree
+    // Expect '{' after class name
+    if (!have("symbol", "{")) {
+        throw ParseException("Error: Expected '{' after class name in class declaration.");
+    }
     classTree->addChild(new ParseTree("symbol", mustBe("symbol", "{")->getValue()));
 
-    // Process class variable declarations
-    while (have("keyword", "static") || have("keyword", "field")) {
-        classTree->addChild(compileClassVarDec());
-    }
+    // ... rest of the method remains unchanged ...
 
-    // Process subroutine declarations
-    while (have("keyword", "constructor") || have("keyword", "function") || have("keyword", "method")) {
-        classTree->addChild(compileSubroutine());
+    // Expect '}' after class content
+    if (!have("symbol", "}")) {
+        throw ParseException("Error: Expected '}' at the end of class declaration.");
     }
-
-    // Add '}' symbol to the tree
     classTree->addChild(new ParseTree("symbol", mustBe("symbol", "}")->getValue()));
 
     return classTree;
 }
+
 
 
 /**
@@ -83,7 +87,7 @@ ParseTree* CompilerParser::compileClass() {
 ParseTree* CompilerParser::compileClassVarDec() {
     // Ensure the current token is 'static' or 'field'
     if (!have("keyword", "static") && !have("keyword", "field")) {
-        throw ParseException();
+        throw ParseException("Error message here.");
     }
 
     ParseTree* varDecTree = new ParseTree("classVarDec", "");
@@ -120,7 +124,7 @@ ParseTree* CompilerParser::compileClassVarDec() {
 ParseTree* CompilerParser::compileSubroutine() {
     // Ensure the current token is 'constructor', 'function', or 'method'
     if (!have("keyword", "constructor") && !have("keyword", "function") && !have("keyword", "method")) {
-        throw ParseException();
+        throw ParseException("Error message here.");
     }
 
     ParseTree* subroutineTree = new ParseTree("subroutineDec", "");
@@ -180,7 +184,7 @@ ParseTree* CompilerParser::compileParameterList() {
             parameterListTree->addChild(new ParseTree("symbol", mustBe("symbol", ",")->getValue()));
         } else if (!have("symbol", ")")) {
             // If the token is not a comma or ")", the parameter list is malformed.
-            throw ParseException();
+            throw ParseException("Error message here.");
         }
     }
 
@@ -220,7 +224,7 @@ ParseTree* CompilerParser::compileSubroutineBody() {
 
     // The subroutine body should start with a "{" symbol.
     if (!have("symbol", "{")) {
-        throw ParseException();
+        throw ParseException("Error message here.");
     }
     bodyTree->addChild(new ParseTree("symbol", mustBe("symbol", "{")->getValue()));
 
@@ -234,7 +238,7 @@ ParseTree* CompilerParser::compileSubroutineBody() {
 
     // The subroutine body should end with a "}" symbol.
     if (!have("symbol", "}")) {
-        throw ParseException();
+        throw ParseException("Error message here.");
     }
     bodyTree->addChild(new ParseTree("symbol", mustBe("symbol", "}")->getValue()));
 
@@ -506,7 +510,7 @@ ParseTree* CompilerParser::compileTerm() {
     } 
     else {
         // It's not a valid term.
-        throw ParseException();
+        throw ParseException("Error message here.");
     }
 
     return termTree;
@@ -575,17 +579,9 @@ bool CompilerParser::have(std::string expectedType, std::string expectedValue) {
  */
 Token* CompilerParser::mustBe(std::string expectedType, std::string expectedValue) {
     if (!have(expectedType, expectedValue)) {
-        throw ParseException();
+        throw ParseException("Error message here.");
     }
     Token* token = *this->currentToken;
     next();  // Advance to the next token before returning
     return token;
-}
-
-/**
- * Definition of a ParseException
- * You can use this ParseException with `throw ParseException();`
- */
-const char* ParseException::what() {
-    return "An Exception occurred while parsing!";
 }

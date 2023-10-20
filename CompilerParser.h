@@ -43,8 +43,14 @@ class CompilerParser {
 };
 
 class ParseException : public std::exception {
-    public:
-        const char* what();
+private:
+    std::string message;
+public:
+    explicit ParseException(const std::string& msg = "An Exception occurred while parsing!") : message(msg) {}
+    
+    virtual const char* what() const noexcept override {
+        return message.c_str();
+    }
 };
 
 #endif /*COMPILERPARSER_H*/
