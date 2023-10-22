@@ -120,7 +120,13 @@ ParseTree* CompilerParser::compileParameterList() {
     ParseTree* paramListNode = new ParseTree("parameterList", "");
 
     while (!have("symbol", ")")) {
-        paramListNode->addChild(mustBe("keyword", ""));  // expects type
+        if (have("keyword", "") || have("identifier", "")) {
+            paramListNode->addChild(current()); 
+            next(); // advance to the next token
+        } else {
+            throw ParseException();
+        }
+
         paramListNode->addChild(mustBe("identifier", ""));  // variable name
 
         if (have("symbol", ",")) {
@@ -158,7 +164,14 @@ ParseTree* CompilerParser::compileVarDec() {
     ParseTree* varNode = new ParseTree("varDec", "");
 
     varNode->addChild(mustBe("keyword", "var"));
-    varNode->addChild(mustBe("keyword", ""));  // expects type
+    
+    if (have("keyword", "") || have("identifier", "")) {
+        varNode->addChild(current()); 
+        next(); // advance to the next token
+    } else {
+        throw ParseException();
+    }
+
     varNode->addChild(mustBe("identifier", ""));  // variable name
 
     while (have("symbol", ",")) {
