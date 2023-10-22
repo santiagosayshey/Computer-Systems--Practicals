@@ -338,8 +338,22 @@ ParseTree* CompilerParser::compileTerm() {
     } else if (have("identifier", "")) {
         termNode->addChild(mustBe("identifier", ""));
         // Handle subroutine call or array indexing
-        if (have("symbol", "(") || have("symbol", ".")) {
-            // Handle the subroutine call here (this is just an indicative comment)
+        if (have("symbol", "(")) {
+            // This represents a method call of the format myFunc(...)
+            termNode->addChild(mustBe("symbol", "("));
+            termNode->addChild(compileExpressionList());
+            termNode->addChild(mustBe("symbol", ")"));
+        } else if (have("symbol", ".")) {
+            // This represents a method call of the format ClassName.methodName(...)
+            termNode->addChild(mustBe("symbol", "."));
+            if(have("identifier", "")) {
+                termNode->addChild(mustBe("identifier", ""));  // method name
+                termNode->addChild(mustBe("symbol", "("));
+                termNode->addChild(compileExpressionList());
+                termNode->addChild(mustBe("symbol", ")"));
+            } else {
+                throw ParseException();
+            }
         } else if (have("symbol", "[")) {
             termNode->addChild(mustBe("symbol", "["));
             termNode->addChild(compileExpression());
@@ -358,6 +372,7 @@ ParseTree* CompilerParser::compileTerm() {
 
     return termNode;
 }
+
 
 
 /**

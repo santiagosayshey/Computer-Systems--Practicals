@@ -8,24 +8,27 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     /* Tokens for:
-     *     class Main {
-     *          function void test ( ) { }
-     *     }
+     *     Main . myFunc ( 1 , Hello )
      */
     list<Token*> tokens;
-    tokens.push_back(new Token("keyword", "int"));
-    tokens.push_back(new Token("identifier", "a"));
+    tokens.push_back(new Token("identifier", "Main"));
+    tokens.push_back(new Token("symbol", "."));
+    tokens.push_back(new Token("identifier", "myFunc"));
+    tokens.push_back(new Token("symbol", "("));
+    tokens.push_back(new Token("integerConstant", "1"));
     tokens.push_back(new Token("symbol", ","));
-    tokens.push_back(new Token("keyword", "char"));
-    tokens.push_back(new Token("identifier", "b"));
+    tokens.push_back(new Token("stringConstant", "Hello"));
+    tokens.push_back(new Token("symbol", ")"));
 
     try {
         CompilerParser parser(tokens);
-        ParseTree* result = parser.compileParameterList();
+        ParseTree* result = parser.compileExpression();
         if (result != NULL){
             cout << result->tostring() << endl;
         }
     } catch (ParseException e) {
         cout << "Error Parsing!" << endl;
     }
+
+    return 0;
 }
