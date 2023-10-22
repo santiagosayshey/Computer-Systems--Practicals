@@ -1,4 +1,5 @@
 #include "CompilerParser.h"
+#include <iostream>
 
 
 /**
@@ -87,9 +88,22 @@ ParseTree* CompilerParser::compileClassVarDec() {
 ParseTree* CompilerParser::compileSubroutine() {
     ParseTree* subroutineNode = new ParseTree("subroutine", "");
 
-    subroutineNode->addChild(mustBe("keyword", ""));  // expects "constructor", "function", or "method"
-    subroutineNode->addChild(mustBe("keyword", ""));  // expects "void" or type
-    subroutineNode->addChild(mustBe("identifier", ""));  // subroutine name
+    // Check if it's a constructor before calling mustBe
+    if (have("keyword", "constructor")) {
+        std::cout << "Constructor" << std::endl;
+        subroutineNode->addChild(mustBe("keyword", "constructor"));
+        subroutineNode->addChild(mustBe("identifier", "")); // Class name
+        subroutineNode->addChild(mustBe("identifier", "")); // Subroutine name
+    } else if (have("keyword", "function") || have("keyword", "method")) {
+        // For function or method, expect "function" or "method" and then the return type
+        std::cout << "Function or method" << std::endl;
+        subroutineNode->addChild(mustBe("keyword", ""));  // "function" or "method"
+        subroutineNode->addChild(mustBe("keyword", ""));  // Return type
+        subroutineNode->addChild(mustBe("identifier", "")); // Subroutine name
+    } else {
+        // Error handling for unexpected tokens
+        throw ParseException();
+    }
 
     subroutineNode->addChild(mustBe("symbol", "("));
     subroutineNode->addChild(compileParameterList());
