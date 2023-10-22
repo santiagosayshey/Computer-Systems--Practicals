@@ -113,7 +113,6 @@ ParseTree* CompilerParser::compileSubroutine() {
     return subroutineNode;
 }
 
-
 /**
  * Generates a parse tree for a subroutine's parameters
  * @return a ParseTree
