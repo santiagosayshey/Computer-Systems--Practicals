@@ -119,19 +119,17 @@ ParseTree* CompilerParser::compileSubroutine() {
 ParseTree* CompilerParser::compileParameterList() {
     ParseTree* paramListNode = new ParseTree("parameterList", "");
 
-    while (!have("symbol", ")")) {
-        if (have("keyword", "") || have("identifier", "")) {
-            paramListNode->addChild(current()); 
-            next(); // advance to the next token
-        } else {
-            throw ParseException();
-        }
+    if (have("keyword", "") || have("identifier", "")) {
+        paramListNode->addChild(current()); 
+        next(); // advance to the next token
+    } else {
+        throw ParseException();
+    }
 
-        paramListNode->addChild(mustBe("identifier", ""));  // variable name
+    paramListNode->addChild(mustBe("identifier", ""));  // variable name
 
-        if (have("symbol", ",")) {
-            paramListNode->addChild(mustBe("symbol", ","));
-        }
+    if (have("symbol", ",")) {
+        paramListNode->addChild(mustBe("symbol", ","));
     }
 
     return paramListNode;
