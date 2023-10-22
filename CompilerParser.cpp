@@ -90,13 +90,11 @@ ParseTree* CompilerParser::compileSubroutine() {
 
     // Check if it's a constructor before calling mustBe
     if (have("keyword", "constructor")) {
-        std::cout << "Constructor" << std::endl;
         subroutineNode->addChild(mustBe("keyword", "constructor"));
         subroutineNode->addChild(mustBe("identifier", "")); // Class name
         subroutineNode->addChild(mustBe("identifier", "")); // Subroutine name
     } else if (have("keyword", "function") || have("keyword", "method")) {
         // For function or method, expect "function" or "method" and then the return type
-        std::cout << "Function or method" << std::endl;
         subroutineNode->addChild(mustBe("keyword", ""));  // "function" or "method"
         subroutineNode->addChild(mustBe("keyword", ""));  // Return type
         subroutineNode->addChild(mustBe("identifier", "")); // Subroutine name
@@ -105,7 +103,6 @@ ParseTree* CompilerParser::compileSubroutine() {
         throw ParseException();
     }
 
-    subroutineNode->addChild(mustBe("symbol", "("));
     subroutineNode->addChild(compileParameterList());
     subroutineNode->addChild(mustBe("symbol", ")"));
 
