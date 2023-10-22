@@ -88,27 +88,14 @@ ParseTree* CompilerParser::compileSubroutine() {
     ParseTree* subroutineNode = new ParseTree("subroutine", "");
 
     subroutineNode->addChild(mustBe("keyword", ""));  // expects "constructor", "function", or "method"
-
-    if (current()->getType() == "identifier") { 
-        subroutineNode->addChild(mustBe("identifier", ""));  // subroutine name
-    } else {
-        subroutineNode->addChild(mustBe("keyword", ""));  // expects "void" or type
-    }
+    subroutineNode->addChild(mustBe("keyword", ""));  // expects "void" or type
+    subroutineNode->addChild(mustBe("identifier", ""));  // subroutine name
 
     subroutineNode->addChild(mustBe("symbol", "("));
-
-    if (!have("symbol", ")")) {
-        subroutineNode->addChild(compileParameterList());
-    }
-
+    subroutineNode->addChild(compileParameterList());
     subroutineNode->addChild(mustBe("symbol", ")"));
-    subroutineNode->addChild(mustBe("symbol", "{"));
 
-    if (!have("symbol", "}")) {
-        subroutineNode->addChild(compileStatements());
-    }
-
-    subroutineNode->addChild(mustBe("symbol", "}"));
+    subroutineNode->addChild(compileSubroutineBody());
 
     return subroutineNode;
 }
