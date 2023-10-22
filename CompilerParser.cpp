@@ -103,6 +103,7 @@ ParseTree* CompilerParser::compileSubroutine() {
         throw ParseException();
     }
 
+    subroutineNode->addChild(mustBe("symbol", "("));
     subroutineNode->addChild(compileParameterList());
     subroutineNode->addChild(mustBe("symbol", ")"));
 
