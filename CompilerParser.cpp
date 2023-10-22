@@ -119,21 +119,30 @@ ParseTree* CompilerParser::compileSubroutine() {
 ParseTree* CompilerParser::compileParameterList() {
     ParseTree* paramListNode = new ParseTree("parameterList", "");
 
-    if (have("keyword", "") || have("identifier", "")) {
-        paramListNode->addChild(current()); 
-        next(); // advance to the next token
-    } else {
-        throw ParseException();
-    }
+    // Continue until we find a closing bracket or run out of tokens
+    while (current() && !have("symbol", ")")) {
+        if (have("keyword", "") || have("identifier", "")) {
+            paramListNode->addChild(current()); 
+            next(); // advance to the next token
+        } else {
+            throw ParseException();
+        }
 
-    paramListNode->addChild(mustBe("identifier", ""));  // variable name
+        // Check if we have reached the end of the token list before trying to add more children
+        if (!current()) {
+            break;
+        }
 
-    if (have("symbol", ",")) {
-        paramListNode->addChild(mustBe("symbol", ","));
+        paramListNode->addChild(mustBe("identifier", ""));  // variable name
+
+        if (have("symbol", ",")) {
+            paramListNode->addChild(mustBe("symbol", ","));
+        }
     }
 
     return paramListNode;
 }
+
 
 /**
  * Generates a parse tree for a subroutine's body
