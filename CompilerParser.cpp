@@ -119,18 +119,23 @@ ParseTree* CompilerParser::compileSubroutine() {
 ParseTree* CompilerParser::compileParameterList() {
     ParseTree* paramListNode = new ParseTree("parameterList", "");
 
+    // While the next token is not the closing parenthesis
     while (!have("symbol", ")")) {
+        // Expecting either a keyword (like "int" or "char") or an identifier (like "Point")
         if (have("keyword", "") || have("identifier", "")) {
             paramListNode->addChild(current()); 
             next(); // advance to the next token
+
+            // After the type, an identifier (variable name) should follow
+            paramListNode->addChild(mustBe("identifier", "")); 
+
+            // If a comma exists, it means there are more parameters to parse
+            if (have("symbol", ",")) {
+                paramListNode->addChild(current());
+                next();
+            }
         } else {
             throw ParseException();
-        }
-
-        paramListNode->addChild(mustBe("identifier", ""));  // variable name
-
-        if (have("symbol", ",")) {
-            paramListNode->addChild(mustBe("symbol", ","));
         }
     }
 
@@ -144,17 +149,25 @@ ParseTree* CompilerParser::compileParameterList() {
 ParseTree* CompilerParser::compileSubroutineBody() {
     ParseTree* bodyNode = new ParseTree("subroutineBody", "");
 
-    bodyNode->addChild(mustBe("symbol", "{"));
+    // Subroutine body always starts with an opening brace
+    bodyNode->addChild(current());
+    next();
 
+    // Parse all variable declarations present in the body
     while (have("keyword", "var")) {
         bodyNode->addChild(compileVarDec());
     }
 
+    // Parse the statements present in the body
     bodyNode->addChild(compileStatements());
-    bodyNode->addChild(mustBe("symbol", "}"));
+
+    // Subroutine body always ends with a closing brace
+    bodyNode->addChild(current());
+    next();
 
     return bodyNode;
 }
+
 
 /**
  * Generates a parse tree for a subroutine variable declaration
