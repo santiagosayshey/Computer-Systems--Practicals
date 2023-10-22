@@ -8,9 +8,6 @@
 #include "Token.h"
 
 class CompilerParser {
-    private:
-        std::list<Token*>::iterator currentToken;
-        std::list<Token*> tokens;
     public:
         CompilerParser(std::list<Token*> tokens);
 
@@ -19,7 +16,6 @@ class CompilerParser {
         ParseTree* compileClassVarDec();
         ParseTree* compileSubroutine();
         ParseTree* compileParameterList();
-        ParseTree* compileSubroutineCall();
         ParseTree* compileSubroutineBody();
         ParseTree* compileVarDec();
 
@@ -31,7 +27,6 @@ class CompilerParser {
         ParseTree* compileReturn();
 
         ParseTree* compileExpression();
-
         ParseTree* compileTerm();
         ParseTree* compileExpressionList();
         
@@ -39,18 +34,16 @@ class CompilerParser {
         Token* current();
         bool have(std::string expectedType, std::string expectedValue);
         Token* mustBe(std::string expectedType, std::string expectedValue);
-        bool isOperator(const std::string& value);
+        bool isOperator(Token* token);
+        
+    private:
+        std::list<Token*> tokens;
+        std::list<Token*>::iterator currentToken;
 };
 
 class ParseException : public std::exception {
-private:
-    std::string message;
-public:
-    explicit ParseException(const std::string& msg = "An Exception occurred while parsing!") : message(msg) {}
-    
-    virtual const char* what() const noexcept override {
-        return message.c_str();
-    }
+    public:
+        const char* what();
 };
 
 #endif /*COMPILERPARSER_H*/
