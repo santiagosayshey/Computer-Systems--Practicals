@@ -22,6 +22,9 @@ int main(int argc, char *argv[]) {
     tokens.push_back(new Token("symbol", "("));
     tokens.push_back(new Token("keyword", "int"));
     tokens.push_back(new Token("identifier", "a"));
+    tokens.push_back(new Token("symbol", ","));
+    tokens.push_back(new Token("identifier", "class2"));
+    tokens.push_back(new Token("identifier", "b"));
     tokens.push_back(new Token("symbol", ")"));
     tokens.push_back(new Token("symbol", "{"));
     tokens.push_back(new Token("symbol", "}"));
